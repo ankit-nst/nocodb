@@ -1,0 +1,8 @@
+#!/bin/bash
+docker run -d --name atlantis \
+  -p 4141:4141 \
+  -e ATLANTIS_GH_USER="${github-bot-user}" \
+  -e ATLANTIS_GH_TOKEN="${your-github-token}" \
+  -e ATLANTIS_GH_WEBHOOK_SECRET="${webhook-secret}" \
+  -e ATLANTIS_REPO_ALLOWLIST="${github-repo}" \
+  runatlantis/atlantis

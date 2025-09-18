@@ -1,0 +1,21 @@
+
+#!/bin/bash
+echo "db_host: ${db_host}"
+echo "secret_arn: ${secret_arn}"
+echo "region: ${region}"
+
+#installing jq
+yum install jq -y
+# Fetch secret from Secrets Manager
+db_pass=$(aws secretsmanager get-secret-value --region "${region}" --secret-id "${secret_arn}" --query SecretString --output text | jq -r .password)
+yum update -y
+amazon-linux-extras install docker -y
+service docker start
+systemctl start docker
+usermod -a -G docker ec2-user
+
+sudo docker run -d --name nocodb-postgres \
+  -v "$(pwd)"/nocodb:/usr/app/data/ \
+  -p 80:8080 \
+  -e NC_DB="pg://${db_host}?u=dev_postgresql_user&p=$db_pass&d=nocodb" \
+  nocodb/nocodb:latest
