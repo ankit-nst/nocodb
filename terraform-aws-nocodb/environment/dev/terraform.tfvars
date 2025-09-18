@@ -92,5 +92,5 @@ db_name = "db-dev-nocodb"
 # Atlantis EC2 Variables
 github_bot_user   = "ankit-nst"
 your_github_token = "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"
-webhook_secret    = "your-webhook-secret"
-github_repo       = "your-github-repo"
+webhook_secret    = "abcd1234"
+github_repo       = "github.com/ankit-nst/nocodb"
