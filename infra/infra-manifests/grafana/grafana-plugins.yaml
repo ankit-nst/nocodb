@@ -1,0 +1,13 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-plugins
+  namespace: grafana
+  labels:
+    grafana_plugins: "1"
+data:
+  config.yaml: |
+    apiVersion: 1
+    plugins:
+      - grafana-opensearch-datasource

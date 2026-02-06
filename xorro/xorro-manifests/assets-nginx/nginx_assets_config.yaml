@@ -1,0 +1,156 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: nginx-peeps-config
+  namespace: xorro
+data:
+    nginx_score_config.conf: |
+        server {
+            listen       80;
+            listen  [::]:80;
+            server_name  localhost;
+            error_page   500 502 503 504  /50x.html;
+            resolver 172.16.0.10;
+            location ~ ^/creator/(.*) {
+                proxy_pass https://peeps-stage-creators-content.s3.ap-southeast-1.amazonaws.com/$1;
+                proxy_set_header Host peeps-stage-creators-content.s3.ap-southeast-1.amazonaws.com;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+            }
+
+            location ~ ^/coverpic/(.*) {
+                proxy_pass https://xorro-campaign-stage-content.s3.ap-southeast-1.amazonaws.com/$1;
+                proxy_set_header Host xorro-campaign-stage-content.s3.ap-southeast-1.amazonaws.com;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+            }
+      
+            location /health {
+                access_log off;
+                return 204;
+            }
+        
+            location /robots.txt {
+              add_header Content-Type text/plain;
+              return 200 "User-agent: *\nDisallow: /";
+            }
+        
+            location /maintenance {
+              root  /data/www;
+              index index.html;
+            }
+        
+            location ^~ /assets/ {
+                rewrite ^/assets(/.*)$ $1 break;  
+                root /usr/share/nginx/html;   
+                try_files $uri $uri/ =404;
+            }
+
+        }
+
+        # server {
+        #     listen 80;
+        #     server_name api.xorro-stage.com assets.xorro-stage.com *.vercel.app ;
+        #     resolver 172.16.0.10;
+
+        #     location ~ ^/creator/(.*) {
+        #         proxy_pass https://peeps-stage-creators-content.s3.ap-southeast-1.amazonaws.com/$1;
+        #         proxy_set_header Host peeps-stage-creators-content.s3.ap-southeast-1.amazonaws.com;
+        #         proxy_set_header X-Real-IP $remote_addr;
+        #         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        #         proxy_set_header X-Forwarded-Proto $scheme;
+        #     }
+        #     location ~ ^/coverpic/(.*) {
+        #         proxy_pass https://xorro-campaign-stage-content.s3.ap-southeast-1.amazonaws.com/$1;
+        #         proxy_set_header Host xorro-campaign-stage-content.s3.ap-southeast-1.amazonaws.com;
+        #         proxy_set_header X-Real-IP $remote_addr;
+        #         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        #         proxy_set_header X-Forwarded-Proto $scheme;
+        #     }
+            
+        # }
+
+        server {
+            listen 80;
+            server_name api.xorro-stage.com *.vercel.app ;
+            resolver 172.16.0.10;
+
+            location ^~ /coverpic/ {
+                # Global CORS headers for all locations
+                    add_header Access-Control-Allow-Origin *;
+                    add_header Access-Control-Allow-Methods "GET, POST, OPTIONS";
+                    add_header Access-Control-Allow-Headers *;
+                    add_header Access-Control-Allow-Credentials true;
+
+                # Handle preflight (OPTIONS) requests
+                if ($request_method = OPTIONS) {
+                    add_header Access-Control-Allow-Origin *;
+                    add_header Access-Control-Allow-Methods "GET, POST, OPTIONS";
+                    add_header Access-Control-Allow-Headers *;
+                    add_header Content-Length 0;
+                    add_header Content-Type text/plain;
+                    return 204;
+                }
+                rewrite ^/coverpic(/.*)$ $1 break;  
+                root /data/campaign;   
+                try_files $uri $uri/ =404;               
+            }
+            location ^~ /creator/ {
+                # Global CORS headers for all locations
+                    add_header Access-Control-Allow-Origin *;
+                    add_header Access-Control-Allow-Methods "GET, POST, OPTIONS";
+                    add_header Access-Control-Allow-Headers *;
+                    add_header Access-Control-Allow-Credentials true;
+
+                # Handle preflight (OPTIONS) requests
+                if ($request_method = OPTIONS) {
+                    add_header Access-Control-Allow-Origin *;
+                    add_header Access-Control-Allow-Methods "GET, POST, OPTIONS";
+                    add_header Access-Control-Allow-Headers *;
+                    add_header Content-Length 0;
+                    add_header Content-Type text/plain;
+                    return 204;
+                }
+                rewrite ^/creator(/.*)$ $1 break;  
+                root /data/peeps;   
+                try_files $uri $uri/ =404;             
+            }
+            error_page 404 /error_redirect;
+            location /error_redirect {
+                return 301 https://trade.xorro-stage.com/404;
+            }
+        }
+
+
+        server {
+            listen 80;
+            server_name  assets.xorro-stage.com *.vercel.app ;
+            resolver 172.16.0.10;
+            
+            location ^~ /assets/ {
+                # Global CORS headers for all locations
+                    add_header Access-Control-Allow-Origin *;
+                    add_header Access-Control-Allow-Methods "GET, POST, OPTIONS";
+                    add_header Access-Control-Allow-Headers *;
+                    add_header Access-Control-Allow-Credentials true;
+
+                # Handle preflight (OPTIONS) requests
+                if ($request_method = OPTIONS) {
+                    add_header Access-Control-Allow-Origin *;
+                    add_header Access-Control-Allow-Methods "GET, POST, OPTIONS";
+                    add_header Access-Control-Allow-Headers *;
+                    add_header Content-Length 0;
+                    add_header Content-Type text/plain;
+                    return 204;
+                }
+                rewrite ^/assets(/.*)$ $1 break;  
+                root /data/assets;   
+                try_files $uri $uri/ =404;            
+            }
+            error_page 404 /error_redirect;
+            location /error_redirect {
+                return 301 https://trade.xorro-stage.com/404;
+            }
+        }

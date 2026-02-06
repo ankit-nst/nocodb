@@ -1,0 +1,4 @@
+apiVersion: v2
+name: gcp-cloud-sql-proxy
+version: 0.1.0
+description: GCP Cloud SQL Proxy Helm chart

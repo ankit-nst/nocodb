@@ -1,0 +1,9 @@
+apiVersion: v2
+name: opensearch-dashboards
+type: application
+version: 2.26.0
+appVersion: "2.18.0"
+dependencies:
+  - name: opensearch-dashboards
+    version: 2.26.0
+    repository: https://opensearch-project.github.io/helm-charts/

@@ -1,0 +1,4 @@
+apiVersion: v2
+name: gcp-external-secrets
+version: 0.1.0
+description: GCP External Secrets Helm chart

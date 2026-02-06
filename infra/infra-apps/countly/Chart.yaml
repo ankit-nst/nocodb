@@ -1,0 +1,11 @@
+apiVersion: v2
+name: countly
+description: A Helm chart for deploying Countly with embedded MongoDB
+type: application
+version: 1.0.0
+appVersion: "25.05.4"
+
+dependencies:
+  - name: countly
+    version: 1.0.0
+    repository: https://charts.christianhuth.de

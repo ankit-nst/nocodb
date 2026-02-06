@@ -1,0 +1,80 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasources
+  namespace: grafana
+data:
+  config.yaml: |
+    apiVersion: 1
+    datasources:
+      - name: CloudWatch
+        type: cloudwatch
+        access: proxy
+        jsonData:
+          defaultRegion: ap-southeast-1
+          authType: default
+          service: ''
+          maxDataPoints: 5000
+        secureJsonData:
+          accessKey: ''
+          secretKey: ''
+        isDefault: false
+        readOnly: false
+      - name: Prometheus
+        type: prometheus
+        access: proxy
+        url: http://prometheus-kube-prometheus-prometheus.prometheus:9090
+        jsonData:
+          httpMethod: GET
+          keepCookies: []
+          tlsSkipVerify: true
+          bearerToken: ''
+        secureJsonData: 
+        isDefault: true
+      - name: Opensearch
+        type: grafana-opensearch-datasource
+        access: proxy
+        url: https://opensearch-cluster-master.opensearch:9200
+        basicAuth: true
+        basicAuthUser: "{{ (.grafana_secrets | fromJson).opensearch_user }}"
+        basicAuthPassword: "{{ (.grafana_secrets | fromJson).opensearch_password }}"
+        jsonData:
+          flavor: opensearch
+          version: 2.18.0
+          versionLabel: 'OpenSearch 2.18.0'
+          maxConcurrentShardRequests: 5
+          timeField: timestamp_millis
+          tlsAuth: false
+          tlsSkipVerify: true
+          interval: Daily
+          database: 'zipkin-traces*'
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: grafana-datasources
+  namespace: grafana
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: grafana
+    kind: SecretStore
+  target:
+    name: grafana-datasources
+    creationPolicy: Owner
+    deletionPolicy: Delete
+    template:
+      metadata:
+        labels:
+          grafana_datasource: "1"
+      engineVersion: v2
+      templateFrom:
+        - configMap:
+            name: grafana-datasources
+            items:
+              - key: config.yaml
+  data:
+    - secretKey: grafana_secrets
+      remoteRef:
+        key: "aws-xorro/stage/grafana"

@@ -1,0 +1,54 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: ingress-rules
+  namespace: argocd
+spec:
+  generators:
+    - git:
+        repoURL: &repo git@github.com:newsocialtheory/argo-xorro-stage.git
+        revision: HEAD
+        directories:
+          - path: ingress/ingress-rules/*
+  template:
+    metadata:
+      name: "ingress-{{path.basename}}"
+      labels: {}
+      annotations:
+        argocd.argoproj.io/sync-wave: "5"
+    spec:
+      project: ingress
+      sources:
+        - repoURL: 024848447392.dkr.ecr.ap-southeast-1.amazonaws.com
+          chart: nst/helm/api
+          targetRevision: v1.19.0
+          helm:
+            parameters:
+              - name: NST.environment
+                value: stage
+              - name: NST.vertical
+                value: xorro
+              - name: NST.project
+                value: "{{path.basename}}"
+              - name: virtualServices.default.certificate.issuer.name
+                value: letsencrypt
+              - name: virtualServices.default.certificate.duration
+                value: 168h0m0s
+              - name: virtualServices.default.certificate.renewBefore
+                value: 160h0m0s
+              - name: virtualServices.default.ambassadorService
+                value: emissary-emissary-ingress.emissary
+            valueFiles:
+              - $valuesRepo/ingress/ingress-rules/{{path.basename}}/values.yaml
+        - repoURL: *repo
+          targetRevision: HEAD
+          ref: valuesRepo
+      destination:
+        name: in-cluster
+        namespace: ingress
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

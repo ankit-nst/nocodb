@@ -1,0 +1,215 @@
+{
+  "apiVersion": 1,
+  "groups": [
+    {
+      "orgId": 1,
+      "name": "pods-cpu",
+      "folder": "kubernetes",
+      "interval": "5m",
+      "rules": [
+        {
+          "uid": "de20lagfwkh6od",
+          "title": "Pod CPU Usage Alert",
+          "condition": "Threshold",
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 3600,
+                "to": 0
+              },
+              "datasourceUid": "PBFA97CFB590B2093",
+              "model": {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "PBFA97CFB590B2093"
+                },
+                "editorMode": "code",
+                "exemplar": true,
+                "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=\"xorro\", image!=\"\", cluster=\"\"}[$__rate_interval])) by (pod) / sum(kube_pod_container_resource_requests{namespace=\"xorro\", resource=\"cpu\", job=~\"kube-state-metrics\", cluster=\"\"}) by (pod)",
+                "instant": false,
+                "interval": "30s",
+                "intervalMs": 15000,
+                "legendFormat": "{{ container }}  REQUESTS",
+                "maxDataPoints": 43200,
+                "range": true,
+                "refId": "A"
+              }
+            },
+            {
+              "refId": "B",
+              "relativeTimeRange": {
+                "from": 3600,
+                "to": 0
+              },
+              "datasourceUid": "PBFA97CFB590B2093",
+              "model": {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "PBFA97CFB590B2093"
+                },
+                "editorMode": "code",
+                "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=\"xorro\", image!=\"\", cluster=\"\"}[$__rate_interval])) by (pod) / sum(kube_pod_container_resource_limits{namespace=\"xorro\", resource=\"cpu\", job=~\"kube-state-metrics\", cluster=\"\"}) by (pod)",
+                "instant": false,
+                "interval": "",
+                "intervalMs": 15000,
+                "legendFormat": "{{ container }}  LIMITS",
+                "maxDataPoints": 43200,
+                "range": true,
+                "refId": "B"
+              }
+            },
+            {
+              "refId": "Usage",
+              "relativeTimeRange": {
+                "from": 3600,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "params": [],
+                      "type": "gt"
+                    },
+                    "operator": {
+                      "type": "and"
+                    },
+                    "query": {
+                      "params": [
+                        "C"
+                      ]
+                    },
+                    "reducer": {
+                      "params": [],
+                      "type": "last"
+                    },
+                    "type": "query"
+                  }
+                ],
+                "datasource": {
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "expression": "A",
+                "intervalMs": 1000,
+                "maxDataPoints": 43200,
+                "reducer": "last",
+                "refId": "Usage",
+                "type": "reduce"
+              }
+            },
+            {
+              "refId": "Threshold",
+              "relativeTimeRange": {
+                "from": 3600,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "params": [
+                        75
+                      ],
+                      "type": "gt"
+                    },
+                    "operator": {
+                      "type": "and"
+                    },
+                    "query": {
+                      "params": [
+                        "D"
+                      ]
+                    },
+                    "reducer": {
+                      "params": [],
+                      "type": "last"
+                    },
+                    "type": "query",
+                    "unloadEvaluator": {
+                      "params": [
+                        75
+                      ],
+                      "type": "lt"
+                    }
+                  }
+                ],
+                "datasource": {
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "expression": "UsagePerc",
+                "intervalMs": 1000,
+                "maxDataPoints": 43200,
+                "refId": "Threshold",
+                "type": "threshold"
+              }
+            },
+            {
+              "refId": "UsagePerc",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "params": [
+                        0,
+                        0
+                      ],
+                      "type": "gt"
+                    },
+                    "operator": {
+                      "type": "and"
+                    },
+                    "query": {
+                      "params": []
+                    },
+                    "reducer": {
+                      "params": [],
+                      "type": "avg"
+                    },
+                    "type": "query"
+                  }
+                ],
+                "datasource": {
+                  "name": "Expression",
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "expression": "${Usage}*100",
+                "hide": false,
+                "intervalMs": 1000,
+                "maxDataPoints": 43200,
+                "refId": "UsagePerc",
+                "type": "math"
+              }
+            }
+          ],
+          "dasboardUid": "k8s_views_pods",
+          "panelId": 50,
+          "noDataState": "NoData",
+          "execErrState": "Error",
+          "for": "5m",
+          "annotations": {
+            "__dashboardUid__": "k8s_views_pods",
+            "__panelId__": "50",
+            "description": "{{ $labels.pod }} is consuming 75% of memory limits. Adjust assigned resources for the service.",
+            "summary": "{{ $labels.pod }} from {{ $labels.namespace }} is consuming 75% of CPU limits"
+          },
+          "labels": {},
+          "isPaused": false,
+          "notification_settings": {
+            "receiver": "nst-stage-alerts"
+          }
+        }
+      ]
+    }
+  ]
+}

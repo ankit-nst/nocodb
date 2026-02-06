@@ -1,0 +1,37 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+metadata:
+    name: grafana-dashboards
+    namespace: grafana
+generatorOptions:
+  disableNameSuffixHash: true
+  labels:
+    grafana_dashboard: "1"
+configMapGenerator:
+  - name: k8s-view-nodes
+    files:
+      - json/k8s-views-nodes.json
+  - name: k8s-addons-prometheus
+    files:
+      - json/k8s-addons-prometheus.json
+  - name: k8s-addons-trivy-operator
+    files:
+      - json/k8s-addons-trivy-operator.json
+  - name: k8s-system-api-server
+    files:
+      - json/k8s-system-api-server.json
+  - name: k8s-system-coredns
+    files:
+      - json/k8s-system-coredns.json
+  - name: k8s-views-global
+    files:
+      - json/k8s-views-global.json
+  - name: k8s-views-namespaces
+    files:
+      - json/k8s-views-namespaces.json
+  - name: k8s-views-pods
+    files:
+      - json/k8s-views-pods.json
+  - name: aws-rds
+    files:
+      - json/aws-rds.json

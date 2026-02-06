@@ -1,0 +1,9 @@
+apiVersion: v2
+name: imgproxy
+type: application
+version: 0.8.35
+appVersion: "3.19.0"
+dependencies:
+- name: imgproxy
+  version: 0.8.35
+  repository:  https://helm.imgproxy.net

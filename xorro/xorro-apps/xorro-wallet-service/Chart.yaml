@@ -1,0 +1,9 @@
+apiVersion: v2
+name: xorro-wallet-service
+type: application
+version: v1.0.0
+appVersion: "v1.0.0"
+dependencies:
+- name: service
+  version: v1.0.0
+  repository: oci://024848447392.dkr.ecr.ap-southeast-1.amazonaws.com/nst/helm

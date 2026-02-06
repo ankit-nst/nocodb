@@ -1,0 +1,9 @@
+apiVersion: v2
+name: mailhog
+type: application
+version: 5.2.3
+appVersion: "v1.0.1"
+dependencies:
+- name: mailhog
+  version: 5.2.3
+  repository: https://codecentric.github.io/helm-charts

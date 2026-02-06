@@ -1,0 +1,9 @@
+apiVersion: v2
+name: pgadmin4
+type: application
+version: 1.27.0
+appVersion: "8,10"
+dependencies:
+- name: pgadmin4
+  version: 1.27.0
+  repository: https://helm.runix.net

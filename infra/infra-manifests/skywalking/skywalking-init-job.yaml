@@ -1,0 +1,45 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "release-name-skywalking-helm-oap-init"
+  labels:
+    app: release-name
+    chart: skywalking-helm-4.7.0
+    component: "release-name-skywalking-helm-job"
+    heritage: Helm
+    release: release-name
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade,post-rollback
+    "helm.sh/hook-weight": "1"
+spec:
+  template:
+    metadata:
+      name: "release-name-oap-init"
+      labels:
+        app: release-name
+        component: "release-name-skywalking-helm-job"
+        release: release-name
+    spec:
+      serviceAccountName: skywalking-skywalking-helm-oap
+      restartPolicy: Never
+      initContainers:
+
+        - name: wait-for-elasticsearch
+          image: busybox:1.30
+          imagePullPolicy: IfNotPresent
+          command: ['sh', '-c', 'for i in $(seq 1 60); do nc -z -w3 elasticsearch-master 9200 && exit 0 || sleep 5; done; exit 1']
+      containers:
+        - name: oap
+          image: skywalking.docker.scarf.sh/apache/skywalking-oap-server:10.0.0
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: JAVA_OPTS
+              value: "-Xmx2g -Xms2g -Dmode=init"
+            - name: SW_STORAGE
+              value: elasticsearch
+            - name: SW_STORAGE_ES_CLUSTER_NODES
+              value: "elasticsearch-master:9200"
+
+          volumeMounts:
+
+      volumes:

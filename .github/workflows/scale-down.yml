@@ -1,0 +1,33 @@
+name: Scale Down Services
+
+on:
+  # schedule:
+  #   - cron: "0 12 * * *"  # 8 PM HKT daily
+  workflow_dispatch:  # optional manual trigger
+
+permissions:
+  contents: write
+
+jobs:
+  scale-down:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Scale down replicas and autoscaling
+        run: |
+          find xorro/xorro-apps -maxdepth 2 -type f -name values.yaml -exec sed -i 's/replicas: [0-9]\+/replicas: 0/' {} +
+          find xorro/xorro-apps -maxdepth 2 -type f -name values.yaml -exec sed -i 's/minAvailable: [0-9]\+/minAvailable: 0/' {} +
+          find xorro/xorro-apps -maxdepth 2 -type f -name values.yaml -exec sed -i '/autoscaling:/,/^[^[:space:]]/s/enabled: true/enabled: false/' {} +
+
+
+      - name: Commit and Push
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+          git diff
+          git add .
+          git commit -m "scale down replicas to 0 [automated]" || echo "No changes to commit"
+          git push

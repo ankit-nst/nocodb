@@ -1,0 +1,1331 @@
+{
+  "apiVersion": 1,
+  "groups": [
+    {
+      "orgId": 1,
+      "name": "pod-targets",
+      "folder": "kubernetes",
+      "interval": "1m",
+      "rules": [
+        {
+          "uid": "ae2lu8cm994hsa",
+          "title": "pod-targets",
+          "condition": "C",
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 600,
+                "to": 0
+              },
+              "datasourceUid": "PBFA97CFB590B2093",
+              "model": {
+                "editorMode": "code",
+                "expr": "count by (job, namespace, service) (up)",
+                "instant": true,
+                "intervalMs": 1000,
+                "legendFormat": "__auto",
+                "maxDataPoints": 43200,
+                "range": false,
+                "refId": "A"
+              }
+            },
+            {
+              "refId": "C",
+              "relativeTimeRange": {
+                "from": 600,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "params": [
+                        1
+                      ],
+                      "type": "lt"
+                    },
+                    "operator": {
+                      "type": "and"
+                    },
+                    "query": {
+                      "params": [
+                        "C"
+                      ]
+                    },
+                    "reducer": {
+                      "params": [],
+                      "type": "last"
+                    },
+                    "type": "query"
+                  }
+                ],
+                "datasource": {
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "expression": "A",
+                "intervalMs": 1000,
+                "maxDataPoints": 43200,
+                "refId": "C",
+                "type": "threshold"
+              }
+            }
+          ],
+          "noDataState": "NoData",
+          "execErrState": "KeepLast",
+          "for": "5m",
+          "annotations": {
+            "description": "{{ $labels.pod }} in {{ $labels.namespace }} has no active running pods. Check helm deployment configuration and service logs.",
+            "summary": "{{ $labels.pod }} in {{ $labels.namespace }} has no active running pods."
+          },
+          "labels": {},
+          "isPaused": false,
+          "notification_settings": {
+            "receiver": "nst-stage-alerts"
+          }
+        }
+      ]
+    },
+    {
+      "orgId": 1,
+      "name": "pods-cpu",
+      "folder": "kubernetes",
+      "interval": "5m",
+      "rules": [
+        {
+          "uid": "de20lagfwkh6od",
+          "title": "Pod CPU Usage Alert",
+          "condition": "Threshold",
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 3600,
+                "to": 0
+              },
+              "datasourceUid": "PBFA97CFB590B2093",
+              "model": {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "PBFA97CFB590B2093"
+                },
+                "editorMode": "code",
+                "exemplar": true,
+                "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=\"xorro\", image!=\"\", cluster=\"\"}[$__rate_interval])) by (pod) / sum(kube_pod_container_resource_requests{namespace=\"xorro\", resource=\"cpu\", job=~\"kube-state-metrics\", cluster=\"\"}) by (pod)",
+                "instant": false,
+                "interval": "30s",
+                "intervalMs": 15000,
+                "legendFormat": "{{ container }}  REQUESTS",
+                "maxDataPoints": 43200,
+                "range": true,
+                "refId": "A"
+              }
+            },
+            {
+              "refId": "B",
+              "relativeTimeRange": {
+                "from": 3600,
+                "to": 0
+              },
+              "datasourceUid": "PBFA97CFB590B2093",
+              "model": {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "PBFA97CFB590B2093"
+                },
+                "editorMode": "code",
+                "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=\"xorro\", image!=\"\", cluster=\"\"}[$__rate_interval])) by (pod) / sum(kube_pod_container_resource_limits{namespace=\"xorro\", resource=\"cpu\", job=~\"kube-state-metrics\", cluster=\"\"}) by (pod)",
+                "instant": false,
+                "interval": "",
+                "intervalMs": 15000,
+                "legendFormat": "{{ container }}  LIMITS",
+                "maxDataPoints": 43200,
+                "range": true,
+                "refId": "B"
+              }
+            },
+            {
+              "refId": "Usage",
+              "relativeTimeRange": {
+                "from": 3600,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "params": [],
+                      "type": "gt"
+                    },
+                    "operator": {
+                      "type": "and"
+                    },
+                    "query": {
+                      "params": [
+                        "C"
+                      ]
+                    },
+                    "reducer": {
+                      "params": [],
+                      "type": "last"
+                    },
+                    "type": "query"
+                  }
+                ],
+                "datasource": {
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "expression": "A",
+                "intervalMs": 1000,
+                "maxDataPoints": 43200,
+                "reducer": "last",
+                "refId": "Usage",
+                "type": "reduce"
+              }
+            },
+            {
+              "refId": "Threshold",
+              "relativeTimeRange": {
+                "from": 3600,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "params": [
+                        75
+                      ],
+                      "type": "gt"
+                    },
+                    "operator": {
+                      "type": "and"
+                    },
+                    "query": {
+                      "params": [
+                        "D"
+                      ]
+                    },
+                    "reducer": {
+                      "params": [],
+                      "type": "last"
+                    },
+                    "type": "query",
+                    "unloadEvaluator": {
+                      "params": [
+                        70
+                      ],
+                      "type": "lt"
+                    }
+                  }
+                ],
+                "datasource": {
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "expression": "UsagePerc",
+                "intervalMs": 1000,
+                "maxDataPoints": 43200,
+                "refId": "Threshold",
+                "type": "threshold"
+              }
+            },
+            {
+              "refId": "UsagePerc",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "params": [
+                        0,
+                        0
+                      ],
+                      "type": "gt"
+                    },
+                    "operator": {
+                      "type": "and"
+                    },
+                    "query": {
+                      "params": []
+                    },
+                    "reducer": {
+                      "params": [],
+                      "type": "avg"
+                    },
+                    "type": "query"
+                  }
+                ],
+                "datasource": {
+                  "name": "Expression",
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "expression": "${Usage}*100",
+                "intervalMs": 1000,
+                "maxDataPoints": 43200,
+                "refId": "UsagePerc",
+                "type": "math"
+              }
+            }
+          ],
+          "dasboardUid": "k8s_views_pods",
+          "panelId": 50,
+          "noDataState": "NoData",
+          "execErrState": "Error",
+          "for": "5m",
+          "annotations": {
+            "__dashboardUid__": "k8s_views_pods",
+            "__panelId__": "50",
+            "description": "{{ $labels.pod }} is consuming 75% of memory limits. Adjust assigned resources for the service.",
+            "summary": "{{ $labels.pod }} from {{ $labels.namespace }} is consuming 75% of CPU limits"
+          },
+          "labels": {},
+          "isPaused": false,
+          "notification_settings": {
+            "receiver": "nst-stage-alerts"
+          }
+        }
+      ]
+    },
+    {
+      "orgId": 1,
+      "name": "pods-memory",
+      "folder": "kubernetes",
+      "interval": "5m",
+      "rules": [
+        {
+          "uid": "fe1ub60biipkwc",
+          "title": "Pod Memory Usage Alert",
+          "condition": "Threshold",
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 3600,
+                "to": 0
+              },
+              "datasourceUid": "PBFA97CFB590B2093",
+              "model": {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "PBFA97CFB590B2093"
+                },
+                "editorMode": "code",
+                "exemplar": true,
+                "expr": "sum(container_memory_working_set_bytes{namespace=\"xorro\", image!=\"\", cluster=\"\"}) by (pod) / sum(kube_pod_container_resource_requests{namespace=\"xorro\", resource=\"memory\", job=~\"kube-state-metrics\", cluster=\"\"}) by (pod)",
+                "instant": false,
+                "interval": "",
+                "intervalMs": 15000,
+                "legendFormat": "{{ container }} REQUESTS",
+                "maxDataPoints": 43200,
+                "range": true,
+                "refId": "A"
+              }
+            },
+            {
+              "refId": "B",
+              "relativeTimeRange": {
+                "from": 3600,
+                "to": 0
+              },
+              "datasourceUid": "PBFA97CFB590B2093",
+              "model": {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "PBFA97CFB590B2093"
+                },
+                "editorMode": "code",
+                "expr": "sum(container_memory_working_set_bytes{namespace=\"xorro\", image!=\"\", cluster=\"\"}) by (pod) / sum(kube_pod_container_resource_limits{namespace=\"xorro\", resource=\"memory\", job=~\"kube-state-metrics\", cluster=\"\"}) by (pod)",
+                "instant": false,
+                "interval": "",
+                "intervalMs": 15000,
+                "legendFormat": "{{ container }} LIMITS",
+                "maxDataPoints": 43200,
+                "range": true,
+                "refId": "B"
+              }
+            },
+            {
+              "refId": "MemoryUsage",
+              "relativeTimeRange": {
+                "from": 3600,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "params": [],
+                      "type": "gt"
+                    },
+                    "operator": {
+                      "type": "and"
+                    },
+                    "query": {
+                      "params": [
+                        "C"
+                      ]
+                    },
+                    "reducer": {
+                      "params": [],
+                      "type": "last"
+                    },
+                    "type": "query"
+                  }
+                ],
+                "datasource": {
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "expression": "B",
+                "intervalMs": 1000,
+                "maxDataPoints": 43200,
+                "reducer": "last",
+                "refId": "MemoryUsage",
+                "type": "reduce"
+              }
+            },
+            {
+              "refId": "Threshold",
+              "relativeTimeRange": {
+                "from": 3600,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "params": [
+                        0.75
+                      ],
+                      "type": "gt"
+                    },
+                    "operator": {
+                      "type": "and"
+                    },
+                    "query": {
+                      "params": [
+                        "D"
+                      ]
+                    },
+                    "reducer": {
+                      "params": [],
+                      "type": "last"
+                    },
+                    "type": "query",
+                    "unloadEvaluator": {
+                      "params": [
+                        0.7
+                      ],
+                      "type": "lt"
+                    }
+                  }
+                ],
+                "datasource": {
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "expression": "MemoryUsage",
+                "intervalMs": 1000,
+                "maxDataPoints": 43200,
+                "refId": "Threshold",
+                "type": "threshold"
+              }
+            }
+          ],
+          "dasboardUid": "k8s_views_pods",
+          "panelId": 30,
+          "noDataState": "NoData",
+          "execErrState": "KeepLast",
+          "for": "5m",
+          "annotations": {
+            "__dashboardUid__": "k8s_views_pods",
+            "__panelId__": "30",
+            "description": "{{ $labels.pod }} is consuming 75% of memory limits. Adjust assigned resources for the service.",
+            "summary": "{{ $labels.pod }} from {{ $labels.namespace }} is consuming 75% of memory limits"
+          },
+          "isPaused": false,
+          "notification_settings": {
+            "receiver": "nst-stage-alerts"
+          }
+        }
+      ]
+    },
+    {
+      "orgId": 1,
+      "name": "rds",
+      "folder": "aws",
+      "interval": "5m",
+      "rules": [
+        {
+          "uid": "cedxv4qbhdz40e",
+          "title": "RDS Error Logs",
+          "condition": "C",
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 300,
+                "to": 0
+              },
+              "datasourceUid": "P034F075C744B399F",
+              "model": {
+                "datasource": {
+                  "type": "cloudwatch",
+                  "uid": "P034F075C744B399F"
+                },
+                "dimensions": {},
+                "expression": "fields @timestamp, @message \n| filter @message like /ERROR/ \n| stats count(*) by bin(1m)",
+                "id": "",
+                "intervalMs": 1000,
+                "label": "",
+                "logGroups": [
+                  {
+                    "accountId": "011528281799",
+                    "arn": "arn:aws:logs:ap-southeast-1:011528281799:log-group:/aws/rds/cluster/stage/postgresql:*",
+                    "name": "/aws/rds/cluster/stage/postgresql"
+                  }
+                ],
+                "matchExact": true,
+                "maxDataPoints": 43200,
+                "metricEditorMode": 0,
+                "metricName": "ForwardedLogEvents",
+                "metricQueryType": 0,
+                "namespace": "AWS/Logs",
+                "period": "",
+                "queryMode": "Logs",
+                "refId": "A",
+                "region": "ap-southeast-1",
+                "sqlExpression": "",
+                "statistic": "SampleCount",
+                "statsGroups": [
+                  "bin(1m)"
+                ]
+              }
+            },
+            {
+              "refId": "C",
+              "relativeTimeRange": {
+                "from": 300,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "params": [
+                        0
+                      ],
+                      "type": "gt"
+                    },
+                    "operator": {
+                      "type": "and"
+                    },
+                    "query": {
+                      "params": [
+                        "C"
+                      ]
+                    },
+                    "reducer": {
+                      "params": [],
+                      "type": "last"
+                    },
+                    "type": "query"
+                  }
+                ],
+                "datasource": {
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "expression": "A",
+                "intervalMs": 1000,
+                "maxDataPoints": 43200,
+                "refId": "C",
+                "type": "threshold"
+              }
+            }
+          ],
+          "dasboardUid": "AWSRDSdbi",
+          "panelId": 40,
+          "noDataState": "OK",
+          "execErrState": "KeepLast",
+          "for": "5m",
+          "annotations": {
+            "__dashboardUid__": "AWSRDSdbi",
+            "__panelId__": "40"
+          },
+          "labels": {},
+          "isPaused": false,
+          "notification_settings": {
+            "receiver": "nst-stage-alerts",
+            "repeat_interval": "12h"
+          }
+        }
+      ]
+    },
+    {
+      "orgId": 1,
+      "name": "rds-deadlock",
+      "folder": "aws",
+      "interval": "1m",
+      "rules": [
+        {
+          "uid": "ce2lmb4z779q8b",
+          "title": "RDS Deadlocks",
+          "condition": "Threshold",
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 3600,
+                "to": 0
+              },
+              "datasourceUid": "P034F075C744B399F",
+              "model": {
+                "alias": "",
+                "datasource": {
+                  "type": "cloudwatch",
+                  "uid": "P034F075C744B399F"
+                },
+                "dimensions": {},
+                "expression": "",
+                "id": "",
+                "intervalMs": 1000,
+                "label": "",
+                "logGroups": [],
+                "matchExact": true,
+                "maxDataPoints": 43200,
+                "metricEditorMode": 0,
+                "metricName": "Deadlocks",
+                "metricQueryType": 0,
+                "namespace": "AWS/RDS",
+                "period": "",
+                "queryMode": "Metrics",
+                "refId": "A",
+                "region": "ap-southeast-1",
+                "sqlExpression": "",
+                "statistic": "Average"
+              }
+            },
+            {
+              "refId": "Count",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "params": [],
+                      "type": "gt"
+                    },
+                    "operator": {
+                      "type": "and"
+                    },
+                    "query": {
+                      "params": [
+                        "B"
+                      ]
+                    },
+                    "reducer": {
+                      "params": [],
+                      "type": "last"
+                    },
+                    "type": "query"
+                  }
+                ],
+                "datasource": {
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "expression": "A",
+                "intervalMs": 1000,
+                "maxDataPoints": 43200,
+                "reducer": "last",
+                "refId": "Count",
+                "type": "reduce"
+              }
+            },
+            {
+              "refId": "Threshold",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "params": [
+                        0
+                      ],
+                      "type": "gt"
+                    },
+                    "operator": {
+                      "type": "and"
+                    },
+                    "query": {
+                      "params": [
+                        "C"
+                      ]
+                    },
+                    "reducer": {
+                      "params": [],
+                      "type": "last"
+                    },
+                    "type": "query"
+                  }
+                ],
+                "datasource": {
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "expression": "Count",
+                "intervalMs": 1000,
+                "maxDataPoints": 43200,
+                "refId": "Threshold",
+                "type": "threshold"
+              }
+            }
+          ],
+          "dasboardUid": "AWSRDSdbi",
+          "panelId": 32,
+          "noDataState": "NoData",
+          "execErrState": "KeepLast",
+          "for": "5m",
+          "annotations": {
+            "__dashboardUid__": "AWSRDSdbi",
+            "__panelId__": "32",
+            "description": "Deadlock has been observed in RDS, please check RDS logs for further details.",
+            "summary": "Deadlock has been observed in RDS"
+          },
+          "labels": {},
+          "isPaused": false,
+          "notification_settings": {
+            "receiver": "nst-stage-alerts"
+          }
+        }
+      ]
+    },
+    {
+      "orgId": 1,
+      "name": "Multiple Request Failure",
+      "folder": "zipkin",
+      "interval": "1m",
+      "rules": [
+        {
+          "uid": "aed9hj02p4qgwc",
+          "title": "Excessive 4xx 5xx Detected",
+          "condition": "C",
+          "data": [
+            {
+              "refId": "A",
+              "queryType": "lucene",
+              "relativeTimeRange": {
+                "from": 600,
+                "to": 0
+              },
+              "datasourceUid": "aecfdo3w2h3wgd",
+              "model": {
+                "alias": "",
+                "bucketAggs": [
+                  {
+                    "field": "timestamp_millis",
+                    "id": "2",
+                    "settings": {
+                      "interval": "5m"
+                    },
+                    "type": "date_histogram"
+                  }
+                ],
+                "datasource": {
+                  "type": "grafana-opensearch-datasource",
+                  "uid": "aecfdo3w2h3wgd"
+                },
+                "format": "table",
+                "intervalMs": 1000,
+                "maxDataPoints": 43200,
+                "metrics": [
+                  {
+                    "id": "1",
+                    "type": "count"
+                  }
+                ],
+                "query": "_q:http.status_code=4* OR _q:http.status_code=5*",
+                "queryType": "lucene",
+                "refId": "A",
+                "timeField": "timestamp_millis"
+              }
+            },
+            {
+              "refId": "C",
+              "relativeTimeRange": {
+                "from": 600,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "params": [
+                        5
+                      ],
+                      "type": "gt"
+                    },
+                    "operator": {
+                      "type": "and"
+                    },
+                    "query": {
+                      "params": [
+                        "C"
+                      ]
+                    },
+                    "reducer": {
+                      "params": [],
+                      "type": "last"
+                    },
+                    "type": "query"
+                  }
+                ],
+                "datasource": {
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "expression": "B",
+                "intervalMs": 1000,
+                "maxDataPoints": 43200,
+                "refId": "C",
+                "type": "threshold"
+              }
+            },
+            {
+              "refId": "B",
+              "relativeTimeRange": {
+                "from": 600,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "params": [
+                        0,
+                        0
+                      ],
+                      "type": "gt"
+                    },
+                    "operator": {
+                      "type": "and"
+                    },
+                    "query": {
+                      "params": []
+                    },
+                    "reducer": {
+                      "params": [],
+                      "type": "avg"
+                    },
+                    "type": "query"
+                  }
+                ],
+                "datasource": {
+                  "name": "Expression",
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "expression": "A",
+                "intervalMs": 1000,
+                "maxDataPoints": 43200,
+                "reducer": "last",
+                "refId": "B",
+                "type": "reduce"
+              }
+            }
+          ],
+          "noDataState": "OK",
+          "execErrState": "KeepLast",
+          "for": "5m",
+          "annotations": {
+            "description": "Multiple 4xx 5xx requests detected.",
+            "summary": "Multiple 4xx 5xx requests detected."
+          },
+          "labels": {},
+          "isPaused": false,
+          "notification_settings": {
+            "receiver": "nst-stage-alerts"
+          }
+        }
+      ]
+    },
+    {
+      "orgId": 1,
+      "name": "wallet-creation-failed",
+      "folder": "zipkin",
+      "interval": "1m",
+      "rules": [
+        {
+          "uid": "cecwnbhsrx1c0c",
+          "title": "Register API Failure ",
+          "condition": "D",
+          "data": [
+            {
+              "refId": "A",
+              "queryType": "lucene",
+              "relativeTimeRange": {
+                "from": 172800,
+                "to": 0
+              },
+              "datasourceUid": "aecfdo3w2h3wgd",
+              "model": {
+                "alias": "",
+                "bucketAggs": [
+                  {
+                    "field": "timestamp_millis",
+                    "id": "1",
+                    "settings": {
+                      "interval": "auto",
+                      "min_doc_count": "0",
+                      "trimEdges": "0"
+                    },
+                    "type": "date_histogram"
+                  }
+                ],
+                "datasource": {
+                  "type": "grafana-opensearch-datasource",
+                  "uid": "aecfdo3w2h3wgd"
+                },
+                "format": "table",
+                "intervalMs": 1000,
+                "maxDataPoints": 43200,
+                "metrics": [
+                  {
+                    "id": "1",
+                    "type": "count"
+                  }
+                ],
+                "query": "name:\"post /register\" AND remoteEndpoint.serviceName:\"http://xorro-circle-service:3000/api\" AND _q:http.status_code=4* AND kind:CLIENT",
+                "queryType": "lucene",
+                "refId": "A",
+                "timeField": "timestamp_millis"
+              }
+            },
+            {
+              "refId": "D",
+              "relativeTimeRange": {
+                "from": 600,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "params": [
+                        0,
+                        0
+                      ],
+                      "type": "gt"
+                    },
+                    "operator": {
+                      "type": "and"
+                    },
+                    "query": {
+                      "params": []
+                    },
+                    "reducer": {
+                      "params": [],
+                      "type": "avg"
+                    },
+                    "type": "query"
+                  }
+                ],
+                "datasource": {
+                  "name": "Expression",
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "expression": "$B>0",
+                "intervalMs": 1000,
+                "maxDataPoints": 43200,
+                "refId": "D",
+                "type": "math"
+              }
+            },
+            {
+              "refId": "B",
+              "relativeTimeRange": {
+                "from": 172800,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "params": [
+                        0,
+                        0
+                      ],
+                      "type": "gt"
+                    },
+                    "operator": {
+                      "type": "and"
+                    },
+                    "query": {
+                      "params": []
+                    },
+                    "reducer": {
+                      "params": [],
+                      "type": "avg"
+                    },
+                    "type": "query"
+                  }
+                ],
+                "datasource": {
+                  "name": "Expression",
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "expression": "A",
+                "intervalMs": 1000,
+                "maxDataPoints": 43200,
+                "reducer": "last",
+                "refId": "B",
+                "settings": {
+                  "mode": ""
+                },
+                "type": "reduce"
+              }
+            }
+          ],
+          "dasboardUid": "cecu5t5rmnim8f",
+          "panelId": 3,
+          "noDataState": "OK",
+          "execErrState": "KeepLast",
+          "for": "0s",
+          "annotations": {
+            "__dashboardUid__": "cecu5t5rmnim8f",
+            "__panelId__": "3",
+            "description": "Triggers when /Register API call fails",
+            "summary": "ERROR- /Register failed in staging."
+          },
+          "isPaused": false,
+          "notification_settings": {
+            "receiver": "nst-stage-alerts"
+          }
+        },
+        {
+          "uid": "decubshf6jnk0b",
+          "title": "Login API Failure",
+          "condition": "C",
+          "data": [
+            {
+              "refId": "A",
+              "queryType": "lucene",
+              "relativeTimeRange": {
+                "from": 172800,
+                "to": 0
+              },
+              "datasourceUid": "aecfdo3w2h3wgd",
+              "model": {
+                "alias": "",
+                "bucketAggs": [
+                  {
+                    "field": "timestamp_millis",
+                    "id": "1",
+                    "settings": {
+                      "interval": "auto"
+                    },
+                    "type": "date_histogram"
+                  }
+                ],
+                "datasource": {
+                  "type": "grafana-opensearch-datasource",
+                  "uid": "aecfdo3w2h3wgd"
+                },
+                "format": "table",
+                "intervalMs": 1000,
+                "maxDataPoints": 43200,
+                "metrics": [
+                  {
+                    "id": "1",
+                    "type": "count"
+                  }
+                ],
+                "query": "name:\"post /login\" AND remoteEndpoint.serviceName:\"http://xorro-circle-service:3000/api\" AND _q:http.status_code=4* AND kind:CLIENT",
+                "queryType": "lucene",
+                "refId": "A",
+                "timeField": "timestamp_millis"
+              }
+            },
+            {
+              "refId": "B",
+              "relativeTimeRange": {
+                "from": 172800,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "params": [
+                        0,
+                        0
+                      ],
+                      "type": "gt"
+                    },
+                    "operator": {
+                      "type": "and"
+                    },
+                    "query": {
+                      "params": []
+                    },
+                    "reducer": {
+                      "params": [],
+                      "type": "avg"
+                    },
+                    "type": "query"
+                  }
+                ],
+                "datasource": {
+                  "name": "Expression",
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "expression": "A",
+                "intervalMs": 1000,
+                "maxDataPoints": 43200,
+                "reducer": "last",
+                "refId": "B",
+                "type": "reduce"
+              }
+            },
+            {
+              "refId": "C",
+              "relativeTimeRange": {
+                "from": 600,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "params": [
+                        0,
+                        0
+                      ],
+                      "type": "gt"
+                    },
+                    "operator": {
+                      "type": "and"
+                    },
+                    "query": {
+                      "params": []
+                    },
+                    "reducer": {
+                      "params": [],
+                      "type": "avg"
+                    },
+                    "type": "query"
+                  }
+                ],
+                "datasource": {
+                  "name": "Expression",
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "expression": "$B>0",
+                "intervalMs": 1000,
+                "maxDataPoints": 43200,
+                "refId": "C",
+                "type": "math"
+              }
+            }
+          ],
+          "dasboardUid": "cecu5t5rmnim8f",
+          "panelId": 3,
+          "noDataState": "OK",
+          "execErrState": "Error",
+          "for": "0s",
+          "annotations": {
+            "__dashboardUid__": "cecu5t5rmnim8f",
+            "__panelId__": "3",
+            "description": "Triggers when /create API call fails",
+            "summary": "ERROR- /login failed in staging."
+          },
+          "isPaused": false,
+          "notification_settings": {
+            "receiver": "nst-stage-alerts"
+          }
+        },
+        {
+          "uid": "aecwndumcaigwd",
+          "title": "Register API Failure",
+          "condition": "D",
+          "data": [
+            {
+              "refId": "A",
+              "queryType": "lucene",
+              "relativeTimeRange": {
+                "from": 172800,
+                "to": 0
+              },
+              "datasourceUid": "aecfdo3w2h3wgd",
+              "model": {
+                "alias": "",
+                "bucketAggs": [
+                  {
+                    "field": "timestamp_millis",
+                    "id": "1",
+                    "settings": {
+                      "interval": "auto"
+                    },
+                    "type": "date_histogram"
+                  }
+                ],
+                "datasource": {
+                  "type": "grafana-opensearch-datasource",
+                  "uid": "aecfdo3w2h3wgd"
+                },
+                "format": "table",
+                "intervalMs": 1000,
+                "maxDataPoints": 43200,
+                "metrics": [
+                  {
+                    "id": "1",
+                    "type": "count"
+                  }
+                ],
+                "query": "name:\"post /register\" AND remoteEndpoint.serviceName:\"http://xorro-circle-service:3000/api\" AND _q:http.status_code=4* AND kind:CLIENT",
+                "queryType": "lucene",
+                "refId": "A",
+                "timeField": "timestamp_millis"
+              }
+            },
+            {
+              "refId": "B",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "params": [
+                        0,
+                        0
+                      ],
+                      "type": "gt"
+                    },
+                    "operator": {
+                      "type": "and"
+                    },
+                    "query": {
+                      "params": []
+                    },
+                    "reducer": {
+                      "params": [],
+                      "type": "avg"
+                    },
+                    "type": "query"
+                  }
+                ],
+                "datasource": {
+                  "name": "Expression",
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "expression": "A",
+                "hide": false,
+                "intervalMs": 1000,
+                "maxDataPoints": 43200,
+                "reducer": "last",
+                "refId": "B",
+                "type": "reduce"
+              }
+            },
+            {
+              "refId": "D",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "params": [
+                        0,
+                        0
+                      ],
+                      "type": "gt"
+                    },
+                    "operator": {
+                      "type": "and"
+                    },
+                    "query": {
+                      "params": []
+                    },
+                    "reducer": {
+                      "params": [],
+                      "type": "avg"
+                    },
+                    "type": "query"
+                  }
+                ],
+                "datasource": {
+                  "name": "Expression",
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "expression": "$B>0",
+                "hide": false,
+                "intervalMs": 1000,
+                "maxDataPoints": 43200,
+                "refId": "D",
+                "type": "math"
+              }
+            }
+          ],
+          "dasboardUid": "cecu5t5rmnim8f",
+          "panelId": 3,
+          "noDataState": "OK",
+          "execErrState": "Error",
+          "for": "0s",
+          "annotations": {
+            "__dashboardUid__": "cecu5t5rmnim8f",
+            "__panelId__": "3",
+            "description": "Triggers when /create API call fails",
+            "summary": "ERROR- /create failed in staging."
+          },
+          "isPaused": false,
+          "notification_settings": {
+            "receiver": "nst-stage-alerts"
+          }
+        }
+      ]
+    }
+  ]
+}

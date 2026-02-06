@@ -1,0 +1,34 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+ name: ingress-apps
+ namespace: argocd
+spec:
+  generators:
+    - git:
+        repoURL: &repo git@github.com:newsocialtheory/argo-xorro-stage.git
+        revision: HEAD
+        directories:
+          - path: ingress/ingress-apps/*
+  template:
+    metadata:
+      name: "{{path.basename}}"
+      labels:
+        kubernetes.io/metadata.name: ingress
+      annotations:
+        argocd.argoproj.io/sync-wave: "1"
+    spec:
+      project: ingress
+      source:
+        repoURL: *repo
+        path: "{{path}}"
+        targetRevision: HEAD
+      destination:
+        name: in-cluster
+        namespace: "{{path.basename}}"
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

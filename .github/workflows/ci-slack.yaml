@@ -1,0 +1,44 @@
+name: Slack notification
+on:
+  pull_request:
+    types: [opened]
+    branches:
+      - main
+jobs:
+  notify:
+    if: github.event_name == 'pull_request' && github.event.action == 'opened'
+    runs-on: nst-build
+    steps:
+      - name: Notify Slack
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        run: |
+          curl -X POST -H 'Content-type: application/json' --data '{
+            "attachments": [
+              {
+                "color": "#36a64f",
+                "pretext": "*A new deployment request has been created!*",
+                "title": "${{ github.event.pull_request.title }}",
+                "fields": [
+                  {
+                    "title": "Author",
+                    "value": "${{ github.event.pull_request.user.login }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Branch",
+                    "value": "${{ github.event.pull_request.head.ref }}",
+                    "short": true
+                  },
+                {
+                  "title": "Pull Request Link",
+                  "value": "${{ github.event.pull_request.html_url }}",
+                  "short": true
+                }
+                ],
+                "footer": "GitHub",
+                "footer_icon": "https://github.githubassets.com/favicon.ico"
+              }
+            ]
+          }' $SLACK_WEBHOOK
+

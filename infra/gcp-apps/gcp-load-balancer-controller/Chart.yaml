@@ -1,0 +1,4 @@
+apiVersion: v2
+name: gcp-load-balancer-controller
+version: 0.1.0
+description: GCP Load Balancer Controller Helm chart

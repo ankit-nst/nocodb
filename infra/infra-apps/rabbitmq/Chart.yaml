@@ -1,0 +1,9 @@
+apiVersion: v2
+name: rabbitmq
+type: application
+version: 15.2.4
+appVersion: "4.0.5"
+dependencies:
+  - name: rabbitmq
+    version: 15.2.4
+    repository:  https://charts.bitnami.com/bitnami

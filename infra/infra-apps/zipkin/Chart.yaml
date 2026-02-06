@@ -1,0 +1,18 @@
+#apiVersion: v2
+#name: zipkin
+#type: application
+#version: 3.4.3
+#appVersion: "3.4.3"
+#dependencies:
+#  - name: zipkin
+#    version: 0.3.6
+#    repository: https://zipkin.io/zipkin-helm
+apiVersion: v2
+name: zipkin
+type: application
+version: v1.0.0
+appVersion: "3.4.3"
+dependencies:
+  - name: service
+    version: v1.0.0
+    repository: oci://024848447392.dkr.ecr.ap-southeast-1.amazonaws.com/nst/helm

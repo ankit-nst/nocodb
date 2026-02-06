@@ -1,0 +1,171 @@
+{
+  "apiVersion": 1,
+  "groups": [
+    {
+      "orgId": 1,
+      "name": "pods-memory",
+      "folder": "kubernetes",
+      "interval": "5m",
+      "rules": [
+        {
+          "uid": "fe1ub60biipkwc",
+          "title": "Pod Memory Usage Alert",
+          "condition": "Threshold",
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 3600,
+                "to": 0
+              },
+              "datasourceUid": "PBFA97CFB590B2093",
+              "model": {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "PBFA97CFB590B2093"
+                },
+                "editorMode": "code",
+                "exemplar": true,
+                "expr": "sum(container_memory_working_set_bytes{namespace=\"xorro\", image!=\"\", cluster=\"\"}) by (pod) / sum(kube_pod_container_resource_requests{namespace=\"xorro\", resource=\"memory\", job=~\"kube-state-metrics\", cluster=\"\"}) by (pod)",
+                "instant": false,
+                "interval": "",
+                "intervalMs": 15000,
+                "legendFormat": "{{ container }} REQUESTS",
+                "maxDataPoints": 43200,
+                "range": true,
+                "refId": "A"
+              }
+            },
+            {
+              "refId": "B",
+              "relativeTimeRange": {
+                "from": 3600,
+                "to": 0
+              },
+              "datasourceUid": "PBFA97CFB590B2093",
+              "model": {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "PBFA97CFB590B2093"
+                },
+                "editorMode": "code",
+                "expr": "sum(container_memory_working_set_bytes{namespace=\"xorro\", image!=\"\", cluster=\"\"}) by (pod) / sum(kube_pod_container_resource_limits{namespace=\"xorro\", resource=\"memory\", job=~\"kube-state-metrics\", cluster=\"\"}) by (pod)",
+                "instant": false,
+                "interval": "",
+                "intervalMs": 15000,
+                "legendFormat": "{{ container }} LIMITS",
+                "maxDataPoints": 43200,
+                "range": true,
+                "refId": "B"
+              }
+            },
+            {
+              "refId": "MemoryUsage",
+              "relativeTimeRange": {
+                "from": 3600,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "params": [],
+                      "type": "gt"
+                    },
+                    "operator": {
+                      "type": "and"
+                    },
+                    "query": {
+                      "params": [
+                        "C"
+                      ]
+                    },
+                    "reducer": {
+                      "params": [],
+                      "type": "last"
+                    },
+                    "type": "query"
+                  }
+                ],
+                "datasource": {
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "expression": "B",
+                "intervalMs": 1000,
+                "maxDataPoints": 43200,
+                "reducer": "last",
+                "refId": "MemoryUsage",
+                "type": "reduce"
+              }
+            },
+            {
+              "refId": "Threshold",
+              "relativeTimeRange": {
+                "from": 3600,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "params": [
+                        0.75
+                      ],
+                      "type": "gt"
+                    },
+                    "operator": {
+                      "type": "and"
+                    },
+                    "query": {
+                      "params": [
+                        "D"
+                      ]
+                    },
+                    "reducer": {
+                      "params": [],
+                      "type": "last"
+                    },
+                    "type": "query",
+                    "unloadEvaluator": {
+                      "params": [
+                        0.7
+                      ],
+                      "type": "lt"
+                    }
+                  }
+                ],
+                "datasource": {
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "expression": "MemoryUsage",
+                "intervalMs": 1000,
+                "maxDataPoints": 43200,
+                "refId": "Threshold",
+                "type": "threshold"
+              }
+            }
+          ],
+          "dasboardUid": "k8s_views_pods",
+          "panelId": 30,
+          "noDataState": "NoData",
+          "execErrState": "KeepLast",
+          "for": "5m",
+          "annotations": {
+            "__dashboardUid__": "k8s_views_pods",
+            "__panelId__": "30",
+            "description": "{{ $labels.pod }} is consuming 75% of memory limits. Adjust assigned resources for the service.",
+            "summary": "{{ $labels.pod }} from {{ $labels.namespace }} is consuming 75% of memory limits"
+          },
+          "isPaused": false,
+          "notification_settings": {
+            "receiver": "nst-stage-alerts"
+          }
+        }
+      ]
+    }
+  ]
+}

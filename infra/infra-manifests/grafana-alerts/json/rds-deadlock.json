@@ -1,0 +1,152 @@
+{
+  "apiVersion": 1,
+  "groups": [
+    {
+      "orgId": 1,
+      "name": "rds-deadlock",
+      "folder": "aws",
+      "interval": "1m",
+      "rules": [
+        {
+          "uid": "ce2lmb4z779q8b",
+          "title": "RDS Deadlocks",
+          "condition": "Threshold",
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 3600,
+                "to": 0
+              },
+              "datasourceUid": "P034F075C744B399F",
+              "model": {
+                "alias": "",
+                "datasource": {
+                  "type": "cloudwatch",
+                  "uid": "P034F075C744B399F"
+                },
+                "dimensions": {},
+                "expression": "",
+                "id": "",
+                "intervalMs": 1000,
+                "label": "",
+                "logGroups": [],
+                "matchExact": true,
+                "maxDataPoints": 43200,
+                "metricEditorMode": 0,
+                "metricName": "Deadlocks",
+                "metricQueryType": 0,
+                "namespace": "AWS/RDS",
+                "period": "",
+                "queryMode": "Metrics",
+                "refId": "A",
+                "region": "ap-southeast-1",
+                "sqlExpression": "",
+                "statistic": "Average"
+              }
+            },
+            {
+              "refId": "Count",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "params": [],
+                      "type": "gt"
+                    },
+                    "operator": {
+                      "type": "and"
+                    },
+                    "query": {
+                      "params": [
+                        "B"
+                      ]
+                    },
+                    "reducer": {
+                      "params": [],
+                      "type": "last"
+                    },
+                    "type": "query"
+                  }
+                ],
+                "datasource": {
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "expression": "A",
+                "intervalMs": 1000,
+                "maxDataPoints": 43200,
+                "reducer": "last",
+                "refId": "Count",
+                "type": "reduce"
+              }
+            },
+            {
+              "refId": "Threshold",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "conditions": [
+                  {
+                    "evaluator": {
+                      "params": [
+                        0
+                      ],
+                      "type": "gt"
+                    },
+                    "operator": {
+                      "type": "and"
+                    },
+                    "query": {
+                      "params": [
+                        "C"
+                      ]
+                    },
+                    "reducer": {
+                      "params": [],
+                      "type": "last"
+                    },
+                    "type": "query"
+                  }
+                ],
+                "datasource": {
+                  "type": "__expr__",
+                  "uid": "__expr__"
+                },
+                "expression": "Count",
+                "intervalMs": 1000,
+                "maxDataPoints": 43200,
+                "refId": "Threshold",
+                "type": "threshold"
+              }
+            }
+          ],
+          "dasboardUid": "AWSRDSdbi",
+          "panelId": 32,
+          "noDataState": "NoData",
+          "execErrState": "KeepLast",
+          "for": "1m",
+          "annotations": {
+            "__dashboardUid__": "AWSRDSdbi",
+            "__panelId__": "32",
+            "description": "Deadlock has been observed in RDS, please check RDS logs for further details.",
+            "summary": "Deadlock has been observed in RDS"
+          },
+          "labels": {},
+          "isPaused": false,
+          "notification_settings": {
+            "receiver": "nst-stage-alerts"
+          }
+        }
+      ]
+    }
+  ]
+}

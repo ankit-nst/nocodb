@@ -1,0 +1,34 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+ name: xorro-manifest
+ namespace: argocd
+spec:
+  generators:
+    - git:
+        repoURL: &repo git@github.com:newsocialtheory/argo-xorro-stage.git
+        revision: HEAD
+        directories:
+          - path: xorro/xorro-manifests/*
+  template:
+    metadata:
+      name: "manifests-{{path.basename}}"
+      labels:
+        kubernetes.io/metadata.name: apps
+      annotations:
+        argocd.argoproj.io/sync-wave: "0"
+    spec:
+      project: xorro
+      source:
+        repoURL: *repo
+        path: "{{path}}"
+        targetRevision: HEAD
+      destination:
+        name: in-cluster
+        namespace: "xorro"
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

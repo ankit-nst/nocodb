@@ -1,0 +1,4 @@
+apiVersion: v2
+name: gcp-node-termination-handler
+version: 0.1.0
+description: GCP Node Termination Handler Helm chart

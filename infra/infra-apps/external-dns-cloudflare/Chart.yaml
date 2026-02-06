@@ -1,0 +1,10 @@
+apiVersion: v2
+name: external-dns-cloudflare
+type: application
+version: 6.26.1
+appVersion: "0.13.6"
+dependencies:
+- name: external-dns
+  version: 6.26.1
+  repository: https://charts.bitnami.com/bitnami
+  alias: external-dns-cloudflare

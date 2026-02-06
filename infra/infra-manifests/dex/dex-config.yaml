@@ -1,0 +1,23 @@
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: config
+  namespace: dex
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: dex-secret-store
+    kind: SecretStore
+  target:
+    name: config
+    creationPolicy: Owner
+    deletionPolicy: Delete
+    template:
+      type: Opaque
+      data:
+        config.yaml: "{{ .config }}"
+  data:
+    - secretKey: config
+      remoteRef:
+        key: "aws-xorro/stage/dex_config"

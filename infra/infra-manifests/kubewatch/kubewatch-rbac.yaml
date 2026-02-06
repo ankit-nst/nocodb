@@ -1,0 +1,42 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kubewatch
+  namespace: kubewatch
+rules:
+  - apiGroups: [""]  # "" indicates the core API group
+    resources:
+      - pods
+      - services
+      - deployments
+      - replicasets
+      - namespaces
+    verbs:
+      - get
+      - watch
+      - list
+  - apiGroups: ["apps"]  # For resources in the apps API group
+    resources:
+      - deployments
+      - statefulsets
+      - daemonsets
+      - replicasets
+    verbs:
+      - get
+      - watch
+      - list
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kubewatch
+  namespace: kubewatch
+subjects:
+  - kind: ServiceAccount
+    name: kubewatch
+    namespace: kubewatch
+roleRef:
+  kind: ClusterRole
+  name: kubewatch
+  apiGroup: rbac.authorization.k8s.io

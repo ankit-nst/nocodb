@@ -1,0 +1,14 @@
+apiVersion: v2
+name: sonarqube
+description: A Helm chart for SonarQube Community Edition
+type: application
+version: 0.1.0
+appVersion: 2025.4.0  # Change to the desired SonarQube version
+
+dependencies:
+  - name: postgresql
+    version: 10.15.0
+    repository: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
+  - name: sonarqube
+    version: 2025.4.0
+    repository: https://SonarSource.github.io/helm-chart-sonarqube

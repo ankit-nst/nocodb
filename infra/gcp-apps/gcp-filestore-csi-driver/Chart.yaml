@@ -1,0 +1,4 @@
+apiVersion: v2
+name: gcp-filestore-csi-driver
+version: 0.1.0
+description: GCP Filestore CSI Driver Helm chart

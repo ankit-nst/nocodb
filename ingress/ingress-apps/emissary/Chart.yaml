@@ -1,0 +1,9 @@
+apiVersion: v2
+name: emissary
+type: application
+version: 8.9.1
+appVersion: "3.9.1"
+dependencies:
+- name: emissary-ingress
+  version: 8.9.1
+  repository: https://app.getambassador.io
