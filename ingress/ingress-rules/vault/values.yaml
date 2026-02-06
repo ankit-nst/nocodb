@@ -1,0 +1,16 @@
+provider: emissary
+virtualServices:
+  default:
+    enabled: true
+    certificate:
+      create: true
+    hosts:
+      - vault.xorro-stage.com
+    httpRoutes:
+      - match:
+          - uri:
+              prefix: /
+        action:
+          route:
+            - host: vault.vault
+              port: 8200

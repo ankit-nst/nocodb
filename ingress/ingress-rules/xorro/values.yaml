@@ -1,0 +1,197 @@
+provider: emissary
+virtualServices:
+  default:
+    enabled: true
+    certificate:
+      create: true
+    hosts:
+      - apply.xorro-stage.com
+    httpRoutes:
+      - match:
+          - uri:
+              prefix: /score
+        action:
+          route:
+            - host: xorro-score-nginx.xorro
+              port: 80
+        options:
+          timeout: "30000" # milliseconds
+      - match:
+          - uri:
+              regex: ^/fundability/internal/.*$
+        action:
+          redirect:
+            scheme: https
+            host: apply.xorro-stage.com
+            uri: /error/404
+        options:
+          timeout: "30000" # milliseconds
+
+      - match:
+          - uri:
+              regex: ^/auth/fundability/internal/.*$
+        action:
+          redirect:
+            scheme: https
+            host: apply.xorro-stage.com
+            uri: /error/404
+        options:
+          timeout: "30000" # milliseconds
+
+      - match:
+          - uri:
+              regex: ^/fundability/prometheus$
+        action:
+          redirect:
+            scheme: https
+            host: apply.xorro-stage.com
+            uri: /error/404
+        options:
+          timeout: "30000" # milliseconds
+
+      - match:
+          - uri:
+              regex: ^/auth/prometheus$
+        action:
+          redirect:
+            scheme: https
+            host: apply.xorro-stage.com
+            uri: /error/404
+        options:
+          timeout: "30000" # milliseconds
+
+      - match:
+          - uri:
+              regex: /auth/(.*)
+        action:
+          route:
+            - host: auth-service.xorro
+              port: 8082
+        options:
+          timeout: "30000" # milliseconds
+          rewrite:
+            uriRegex:
+              pattern: /auth/(.*)
+              substitution: /\1
+
+      - match:
+        # auth-service
+        - uri:
+            exact: /auth/swagger/
+        action:
+          redirect:
+            scheme: https
+            host: apply.xorro-stage.com
+            uri: /error/404
+        options:
+          timeout: "30000" # milliseconds
+
+      - match:
+        # auth-service
+        - uri:
+            exact: /auth/swagger-ui
+        action:
+          redirect:
+            scheme: https
+            host: apply.xorro-stage.com
+            uri: /error/404
+        options:
+          timeout: "30000" # milliseconds
+
+      - match:
+        # auth-service
+        - uri:
+            exact: /api/auth/swagger-ui
+        action:
+          redirect:
+            scheme: https
+            host: apply.xorro-stage.com
+            uri: /error/404
+        options:
+          timeout: "30000" # milliseconds
+
+      - match:
+        # auth-service
+        - uri:
+            exact: /api/auth/swagger/
+        action:
+          redirect:
+            scheme: https
+            host: apply.xorro-stage.com
+            uri: /error/404
+        options:
+          timeout: "30000" # milliseconds
+
+      - match:
+        # fundability-service
+        - uri:
+            exact: /api/fundability/swagger/
+        action:
+          redirect:
+            scheme: https
+            host: apply.xorro-stage.com
+            uri: /error/404
+        options:
+          timeout: "30000" # milliseconds
+
+      - match:
+        # fundability-service
+        - uri:
+            exact: /fundability/swagger/
+        action:
+          redirect:
+            scheme: https
+            host: apply.xorro-stage.com
+            uri: /error/404
+        options:
+          timeout: "30000" # milliseconds
+
+
+      - match:
+        # fundability-service
+        - uri:
+            exact: /fundability/swagger-ui
+        action:
+          redirect:
+            scheme: https
+            host: apply.xorro-stage.com
+            uri: /error/404
+        options:
+          timeout: "30000" # milliseconds
+
+      - match:
+        # fundability-service
+        - uri:
+            exact: /api/fundability/swagger-ui
+        action:
+          redirect:
+            scheme: https
+            host: apply.xorro-stage.com
+            uri: /error/404
+        options:
+          timeout: "30000" # milliseconds
+
+              
+      - match:
+          - uri:
+              regex: /fundability/(.*)
+        action:
+          route:
+            - host: xorro-fundability-service.xorro
+              port: 8090
+        options:
+          timeout: "30000" # milliseconds
+          rewrite:
+            uriRegex:
+              pattern: /fundability/(.*)
+              substitution: /\1
+              
+      - match:
+          - uri:
+              prefix: /
+        action:
+          route:
+            - host: fundability-web.xorro
+              port: 3000
+        options:
+          timeout: "30000" 

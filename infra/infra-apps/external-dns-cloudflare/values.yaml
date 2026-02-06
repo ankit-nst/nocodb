@@ -1,0 +1,31 @@
+external-dns-cloudflare:
+  image:
+    tag: latest
+  logFormat: json
+  triggerLoopOnEvent: true
+  interval: 3m
+  provider: cloudflare
+  policy: sync
+  txtOwnerId: nst-build-ap-southeast-1
+  sources:
+    - ambassador-host
+  rbac:
+    additionalPermissions:
+      - apiGroups: [""]
+        resources: ["services","endpoints","pods"]
+        verbs: ["get","watch","list"]
+      - apiGroups: ["extensions","networking.k8s.io", "getambassador.io"]
+        resources: ["ingresses", "hosts"]
+        verbs: ["get","watch","list"]
+  serviceAccount:
+    name: external-dns
+    annotations:
+      eks.amazonaws.com/sts-regional-endpoints: "true"
+      eks.amazonaws.com/role-arn: arn:aws:iam::011528281799:role/stage-eks-external-dns-cloudflare
+  logLevel: debug
+  zoneIdFilters:
+    - 7d10938d9d4586b07b15750e140c2b52    # xorro-stage.com
+  cloudflare:
+    secretName: external-dns-cloudflare-secrets
+    proxied: true
+    apiKey: null

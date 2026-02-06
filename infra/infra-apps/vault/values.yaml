@@ -1,0 +1,71 @@
+vault:
+  server:
+    injector:
+      enabled: true
+      logLevel: trace
+    serviceAccount:
+      annotations:
+        eks.amazonaws.com/role-arn: "arn:aws:iam::011528281799:role/stage-eks-vault"
+    logLevel: trace
+    authDelegator:
+      enabled: true
+    auditStorage:
+      enabled: true
+      size: 50Gi
+      storageClass: ebs-sc
+    dataStorage:
+      enabled: true
+      size: 20Gi
+      mountPath: "/vault/data"
+      storageClass: ebs-sc
+    ha:
+      enabled: true
+      replicas: 3
+
+      # Enables Vault's integrated Raft storage.  Unlike the typical HA modes where
+      # Vault's persistence is external (such as Consul), enabling Raft mode will create
+      # persistent volumes for Vault to store data according to the configuration under server.dataStorage.
+      # The Vault cluster will coordinate leader elections and failovers internally.
+      raft:
+        enabled: true
+        config: |
+          ui = true
+          listener "tcp"
+          {
+            tls_disable = 1
+            address = "[::]:8200"
+            cluster_address = "[::]:8201"
+            # Enable unauthenticated metrics access (necessary for Prometheus Operator)
+            telemetry {
+              unauthenticated_metrics_access = "true"
+            }
+          }
+          storage "raft"
+          {
+            path = "/vault/data"
+          }
+          service_registration "kubernetes" {}
+          seal "awskms"
+          {
+            kms_key_id              = "fa59ff2e-0291-4645-8dd4-20c03a75253d"
+            region                  = "ap-southeast-1"
+            role_arn                = "arn:aws:iam::011528281799:role/stage-eks-vault"
+            web_identity_token_file = "/var/run/secrets/eks.amazonaws.com/serviceaccount/token"
+          }
+          telemetry
+          {
+             prometheus_retention_time = "24h"
+             disable_hostname = true
+          }
+          audit
+          {
+            sink {
+              type = "file"
+              path = "/vault/logs/audit.log"
+            }
+          }
+  serverTelemetry:
+    serviceMonitor:
+      enabled: false
+      interval: 60s
+      scrapeTimeout: 30s

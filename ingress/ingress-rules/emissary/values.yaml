@@ -1,0 +1,19 @@
+provider: emissary
+virtualServices:
+  default:
+    enabled: true
+    certificate:
+      create: true
+    hosts:
+      - emissary.xorro-stage.com
+    httpRoutes:
+      - match:
+          - uri:
+              prefix: /
+        action:
+          route:
+            - host: emissary-emissary-ingress.emissary
+              port: 8877
+        options:
+          rewrite:
+            uriPrefix: /ambassador/v0/diag

@@ -1,0 +1,5 @@
+# Default values for gcp-cloud-sql-proxy
+replicaCount: 1
+image:
+  repository: gcr.io/cloudsql-docker/gce-cloud-sql-proxy
+  tag: latest

@@ -1,0 +1,19 @@
+provider: emissary
+virtualServices:
+  default:
+    enabled: true
+    certificate:
+      create: true
+    hosts:
+      - mq.xorro-stage.com
+    httpRoutes:
+      - match:
+          - uri:
+              prefix: /
+        action:
+          route:
+            - host: rabbitmq.rabbitmq
+              port: 15672
+        options:
+          allow_upgrade:
+            - websocket

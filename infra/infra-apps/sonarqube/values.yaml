@@ -1,0 +1,66 @@
+sonarqube:
+  replicaCount: 1
+  image:
+  repository: sonarqube
+  pullPolicy: IfNotPresent
+
+  service:
+  type: ClusterIP
+  port: 9000
+
+  monitoringPasscode: "changeThisToASecurePasscode"
+  community:
+    enabled: true
+  plugins:
+    install:
+      - https://github.com/mc1arke/sonarqube-community-branch-plugin/releases/download/25.7.0/sonarqube-community-branch-plugin-25.7.0.jar
+  sonarProperties:
+    sonar.web.javaAdditionalOpts: "-javaagent:/opt/sonarqube/extensions/plugins/sonarqube-community-branch-plugin-25.7.0.jar=web"
+    sonar.ce.javaAdditionalOpts: "-javaagent:/opt/sonarqube/extensions/plugins/sonarqube-community-branch-plugin-25.7.0.jar=ce"
+
+  extraVolumes:
+    - name: webapp
+      emptyDir:
+        sizeLimit: 50Mi
+  extraVolumeMounts:
+    - name: webapp
+      mountPath: /opt/sonarqube/web
+  extraInitContainers:
+    - name: download-webapp
+      image: busybox:1.37
+      volumeMounts:
+        - name: webapp
+          mountPath: /web
+      command:
+        - sh
+        - -c
+        - wget -O /tmp/sonarqube-webapp.zip https://github.com/mc1arke/sonarqube-community-branch-plugin/releases/download/25.7.0/sonarqube-webapp.zip &&
+          unzip -o /tmp/sonarqube-webapp.zip -d /web &&
+          chmod -R 755 /web &&
+          chown -R 1000:0 /web &&
+          rm -f /tmp/sonarqube-webapp.zip
+  #   enabled: true
+#   postgresqlUsername: "sonarUser"
+#   postgresqlPassword: "sonarPass"
+#   postgresqlDatabase: "sonarDB"
+#   persistence:
+#     enabled: true
+#     size: 8Gi
+#   resources:
+#     requests:
+#       memory: 512Mi
+#       cpu: 250m
+#     limits:
+#       memory: 1Gi
+#       cpu: 500m
+
+resources:
+  requests:
+    memory: 1024Mi
+    cpu: 500m
+  limits:
+    memory: 1Gi
+    cpu: 1
+
+ingress:
+  enabled: false

@@ -1,0 +1,20 @@
+provider: emissary
+virtualServices:
+  default:
+    enabled: true
+    certificate:
+      create: true
+    hosts:
+      - assets.xorro-stage.com
+    httpRoutes:
+      - match:
+          - uri:
+              prefix: /assets
+        action:
+          route:
+            - host: xorro-assets-nginx.xorro
+              port: 80
+        options:
+          timeout: "30000" # milliseconds
+          allow_upgrade:
+            - websocket

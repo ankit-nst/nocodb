@@ -1,0 +1,62 @@
+service:
+  fullNameOverride: &name "mock-service"
+  NST: &env
+    environment: "stage"
+    project: "xorro"
+    vertical: "xorro"
+  workload:
+    enabled: true
+    scheduling:
+      minAvailable: 1
+    deployment:
+      replicas: 1
+      rollingUpdate:
+        maxSurge: 100%
+        maxUnavailable: 1
+    podTemplate:
+      nodeSelector:
+        nst.com/app-type: "xorro"
+      tolerations:
+        - key: "nst.com/app-type"
+          operator: "Exists"
+          effect: "NoSchedule"
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - *name
+              topologyKey: "kubernetes.io/hostname"  # This key ensures pods are spread across nodes
+      defaultContainer:
+        image:
+          name: 024848447392.dkr.ecr.ap-southeast-1.amazonaws.com/nst/mock-service
+          tag: "latest"
+        containerPorts:
+          - containerPort: &http 8081
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+        startupProbe:
+          httpGet:
+            path: /health
+            port: *http
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: *http
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: *http
+  service:
+    enabled: true
+    ports:
+      - name: http
+        port: *http

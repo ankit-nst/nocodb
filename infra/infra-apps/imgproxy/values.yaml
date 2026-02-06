@@ -1,0 +1,62 @@
+imgproxy:
+  image:
+    repo: darthsim/imgproxy
+    tag: v3.20.0
+    pullPolicy: IfNotPresent
+  resources:
+    serviceAccount:
+      existingName: imgproxy-imgproxy-service-account
+  # License key for Imgproxy Pro.
+  licenseKey: ""
+  features:
+    # https://docs.imgproxy.net/configuration?id=url-signature
+    urlSignature:
+      # If URL signature is enabled
+      enabled: true
+      # ENV['IMGPROXY_KEY']
+      # Hex-encoded key for  URL encoding. CHANGE IT!!!!
+      key: 124cbd3fade64818ba8bef4f8480b1a3f3ef2230095d47c0c3cc65b2fd072c8d922bc079ae7fc79189886a7917b2f44f35f5cfacc4f6df5f452c2745ba86f563
+      # ENV['IMGPROXY_SALT']
+      # Hex-encoded salt for URL encoding. CHANGE IT!!!!
+      salt: 85abf7f69dc2c9bcd579c3d1f6c2bdda882146a17758117269e33e710fb9097bf9fee5abc2c018456dda0c8979ed19625c8997ab78df1a38c26220f830695829
+      # ENV['IMGPROXY_SIGNATURE_SIZE']
+      # number of bytes to use for signature before encoding to Base64.
+      signatureSize: "32"
+    # https://docs.imgproxy.net/configuration?id=cookies
+    aws:
+
+      # ENV['IMGPROXY_USE_S3']
+      # when `true`, enables image fetching from Amazon S3 buckets.
+      enabled: true
+
+      # AWS account id (required for authentication using IAM Role)
+      accountId: "011528281799"
+
+      # ENV['AWS_ACCESS_KEY_ID']
+      # AWS key
+      accessKeyId: ""
+
+      # ENV['AWS_SECRET_ACCESS_KEY']
+      # AWS secret
+      secretAccessKey: ""
+
+
+
+      # ENV['IMGPROXY_S3_ASSUME_ROLE_ARN']
+      # (3.17+) The AWS IAM Role to Assume
+      iamRoleName: "arn:aws:iam::011528281799:role/stage-eks-imgproxy-imgproxy-service-account"
+
+      # ENV['IMGPROXY_S3_REGION']
+      # AWS region
+      s3Region: ""
+
+      # ENV['IMGPROXY_S3_ENDPOINT']
+      # custom S3 endpoint to being used by imgproxy.
+      s3Endpoint: ""
+    
+    security:
+      # the maximum resolution of the source image, in megapixels. Images with larger actual size will be rejected.
+      maxSrcResolution: "100"
+      # The maximum size of the source image, in bytes. Images with larger file size will be rejected.
+      # When `0`, file size check is disabled.
+      maxSrcFileSize: "0"

@@ -1,0 +1,16 @@
+provider: emissary
+virtualServices:
+  default:
+    enabled: true
+    certificate:
+      create: true
+    hosts:
+      - alertmanager.xorro-stage.com
+    httpRoutes:
+      - match:
+          - uri:
+              prefix: /
+        action:
+          route:
+            - host: prometheus-kube-prometheus-alertmanager.prometheus
+              port: 9093

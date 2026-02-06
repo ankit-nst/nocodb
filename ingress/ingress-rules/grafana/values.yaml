@@ -1,0 +1,19 @@
+provider: emissary
+virtualServices:
+  default:
+    enabled: true
+    certificate:
+      create: true
+    hosts:
+      - grafana.xorro-stage.com
+    httpRoutes:
+      - match:
+          - uri:
+              prefix: /
+        action:
+          route:
+            - host: grafana.grafana
+              port: 80
+        options:
+          allow_upgrade:
+            - websocket

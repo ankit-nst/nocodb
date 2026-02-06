@@ -1,0 +1,38 @@
+provider: emissary
+virtualServices:
+  default:
+    enabled: true
+    certificate:
+      create: true
+    hosts:
+      - static.xorro-stage.com
+    httpRoutes:
+      - match:
+          - uri:
+              exact: /health
+        action:
+          redirect:
+            scheme: https
+            host: trade.xorro-stage.com
+            uri: /
+            
+      - match:
+          - uri:
+              exact: /
+        action:
+          redirect:
+            scheme: https
+            host: trade.xorro-stage.com
+            uri: /
+            
+      - match:
+          - uri:
+              regex: "^/(.+)"
+              #prefix: /
+        action:
+          route:
+            - host: imgproxy-imgproxy.imgproxy
+              port: 80
+        options:
+          allow_upgrade:
+            - websocket

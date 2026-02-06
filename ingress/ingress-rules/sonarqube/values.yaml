@@ -1,0 +1,19 @@
+provider: emissary
+virtualServices:
+  default:
+    enabled: true
+    certificate:
+      create: true
+    hosts:
+      - sonarqube.xorro-stage.com
+    httpRoutes:
+      - match:
+          - uri:
+              prefix: /
+        action:
+          route:
+            - host: sonarqube-sonarqube.sonarqube
+              port: 9000
+        options:
+          allow_upgrade:
+            - websocket

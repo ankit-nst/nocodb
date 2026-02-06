@@ -1,0 +1,52 @@
+fluent-bit:
+  podAnnotations:
+    vault.hashicorp.com/agent-inject: "true"
+    vault.hashicorp.com/agent-pre-populate-only: 'true'
+    vault.hashicorp.com/role: "fluent-bit"
+    vault.hashicorp.com/agent-inject-secret-output: "secret/data/opensearch"
+    vault.hashicorp.com/agent-inject-template-output: |
+      {{- with secret "secret/data/opensearch" -}}
+      {{ .Data.data.output }}
+      {{- end }}
+  tolerations:
+    - key: "nst.com/app-type"
+      operator: "Equal"
+      value: "xorro"
+      effect: "NoSchedule"
+  config:
+    inputs: |
+      [INPUT]
+          Name tail
+          Path /var/log/containers/*.log
+          multiline.parser cri, docker, java, python, go
+          Tag kube.*
+          Mem_Buf_Limit 5MB
+          Skip_Long_Lines Off
+          Skip_Empty_Lines On
+    filters: |
+      [FILTER]
+          Name multiline
+          Match kube.*
+          multiline.parser cri, java, python, go
+          multiline.key_content log
+          buffer On
+      [FILTER]
+          Name kubernetes
+          Match kube.*
+          Merge_Log On
+          Keep_Log Off
+          K8S-Logging.Parser On
+          K8S-Logging.Exclude On
+      [FILTER]
+          Name nest
+          Match *
+          Wildcard pod_name
+          Operation lift
+          Nested_under kubernetes
+          Add_prefix kubernetes_
+      [FILTER]
+          Name grep
+          Match kube.*
+          Regex kubernetes_namespace_name ^(xorro|emissary)$
+    outputs: |
+      @INCLUDE /vault/secrets/output

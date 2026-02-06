@@ -1,0 +1,61 @@
+emissary-ingress:
+  replicaCount: 1
+  podDisruptionBudget:
+    minAvailable: 1
+  agent:
+    enabled: false
+  metrics:
+    serviceMonitor:
+      enabled: true
+      namespace: prometheus
+  waitForApiext:
+    enabled: true
+    deploymentName: emissary-apiext
+    deploymentNamespace: emissary
+  ingressClassResource:
+    default: true
+  service:
+    loadBalancerSourceRanges:
+      - "103.21.244.0/22"
+      - "103.22.200.0/22"
+      - "103.31.4.0/22"
+      - "104.16.0.0/13"
+      - "104.24.0.0/14"
+      - "108.162.192.0/18"
+      - "131.0.72.0/22"
+      - "141.101.64.0/18"
+      - "162.158.0.0/15"
+      - "172.64.0.0/13"
+      - "173.245.48.0/20"
+      - "188.114.96.0/20"
+      - "190.93.240.0/20"
+      - "197.234.240.0/22"
+      - "198.41.128.0/17"
+    ports:
+    - name: https
+      port: 443
+      targetPort: 8443
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 50
+    behavior:
+      scaleUp:
+        stabilizationWindowSeconds: 300
+        policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 60
+      scaleDown:
+        stabilizationWindowSeconds: 300
+        policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 60

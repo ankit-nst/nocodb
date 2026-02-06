@@ -1,0 +1,5 @@
+# Default values for gcp-secrets-store-csi-driver
+replicaCount: 1
+image:
+  repository: gke.gcr.io/secrets-store-csi-driver
+  tag: latest

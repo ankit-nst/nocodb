@@ -1,0 +1,38 @@
+dex:
+  serviceAccount:
+    create: false
+    name: dex
+  configSecret:
+    create: false
+    name: config
+  volumeMounts:
+    - name: static-files
+      mountPath: /shared
+    - name: google-json
+      mountPath: /tmp/oidc
+      readOnly: true
+  volumes:
+    - name: static-files
+      emptyDir: {}
+    - name: google-json
+      secret:
+        defaultMode: 420
+        secretName: google-service-account-json
+  replicaCount: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  podDisruptionBudget:
+    enabled: true
+    maxUnavailable: 1
+  priorityClassName: system-cluster-critical
+  serviceMonitor:
+    enabled: false
+  resources:
+    limits:
+      cpu: 300m
+      memory: 128Mi
+    requests:
+      cpu: 300m
+      memory: 128Mi

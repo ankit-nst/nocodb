@@ -1,0 +1,72 @@
+provider: emissary
+virtualServices:
+  default:
+    enabled: true
+    certificate:
+      create: true
+    hosts:
+      - api.xorro-stage.com
+    httpRoutes:
+      - match:
+          - uri:
+              exact: /auth/prometheus
+        action:
+          redirect:
+            scheme: https
+            host: api.xorro-stage.com
+            uri: /error/404
+        options:
+          timeout: "30000" # milliseconds
+
+      - match:
+          - uri:
+              regex: /auth/(.*)
+        action:
+          route:
+            - host: auth-service.xorro
+              port: 8082
+        options:
+          timeout: "30000" # milliseconds
+          rewrite:
+            uriRegex:
+              pattern: /auth/(.*)
+              substitution: /\1
+        cors:
+          allowOrigins:
+            - https://fundability.xorro-stage.com
+          allowMethods:
+            - POST
+            - PUT
+            - GET
+            - OPTIONS
+          allowHeaders:
+            - Content-Type
+          allowCredentials: true
+          exposeHeaders:
+            - X-Custom-Header
+          maxAge: "86400s"
+
+      - match:
+          - uri:
+              exact: /fundability/prometheus
+        action:
+          redirect:
+            scheme: https
+            host: api.xorro-stage.com
+            uri: /error/404
+        options:
+          timeout: "30000" # milliseconds
+
+      - match:
+          - uri:
+              regex: /fundability/(.*)
+        action:
+          route:
+            - host: xorro-fundability-service.xorro
+              port: 8090
+        options:
+          timeout: "30000" # milliseconds
+          rewrite:
+            uriRegex:
+              pattern: /fundability/(.*)
+              substitution: /\1

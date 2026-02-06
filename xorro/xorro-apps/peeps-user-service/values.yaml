@@ -1,0 +1,114 @@
+service:
+  fullNameOverride: &name "peeps-user-service"
+  NST: &env
+    environment: "stage"
+    project: "xorro"
+    vertical: "xorro"
+  workload:
+    enabled: true
+    scheduling:
+      minAvailable: 1
+    serviceAccount:
+      awsIamRole: "arn:aws:iam::011528281799:role/stage-eks-peeps-user-service"
+    deployment:
+      replicas: 1
+      rollingUpdate:
+        maxSurge: 100%
+        maxUnavailable: 1
+    podTemplate:
+      annotations:
+        config.linkerd.io/skip-outbound-ports: "8200,3306"
+        vault.hashicorp.com/agent-inject: 'true'
+        vault.hashicorp.com/agent-pre-populate-only: 'true'
+        vault.hashicorp.com/role: *name
+        vault.hashicorp.com/agent-inject-default-template: 'json'
+        vault.hashicorp.com/agent-inject-secret-secrets.yml: 'secret/data/xorro/peeps-user-service'
+        vault.hashicorp.com/agent-inject-template-secrets.yml: |
+          {{- with secret "secret/data/xorro/peeps-user-service" -}}
+            {{ .Data.data.secrets }}
+          {{- end -}}
+      nodeSelector:
+        nst.com/app-type: "xorro"
+      tolerations:
+        - key: "nst.com/app-type"
+          operator: "Exists"
+          effect: "NoSchedule"
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - *name
+              topologyKey: "kubernetes.io/hostname"  # This key ensures pods are spread across nodes
+      defaultContainer:
+        image:
+          name: 024848447392.dkr.ecr.ap-southeast-1.amazonaws.com/xorro/peeps-user-service
+          tag: "v1.17.0"
+        containerPorts:
+          - containerPort: &http 8093
+        env:
+          - name: MICRONAUT_CONFIG_FILES
+            value: "file:/vault/secrets/secrets.yml"
+          - name: MICRONAUT_ENVIRONMENTS
+            value: "staging"
+          - name: PEEPS_USER_SERVICE_CONFIG_AWS_ROLE-ARN
+            value: "arn:aws:iam::011528281799:role/stage-eks-peeps-user-service"
+          - name: PEEPS_USER_SERVICE_CONFIG_AWS_BUCKET-NAME
+            value: "peeps-stage-creators-content"
+          - name: PEEPS_USER_SERVICE_CONFIG_AWS_AWS-URL
+            value: "https://api.xorro-stage.com/creator"
+          - name: PEEPS_USER_SERVICE_CONFIG_AWS_USE-LOCAL-STACK
+            value: "false"
+          - name: PEEPS_USER_SERVICE_CONFIG_REDIS-URI
+            value: "redis://xorro-stage.lvbsb0.ng.0001.apse1.cache.amazonaws.com:6379"
+        resources:
+          requests:
+            cpu: 300m
+            memory: 700Mi
+          limits:
+            cpu: 600m
+            memory: 1024Mi
+        startupProbe:
+          httpGet:
+            path: /health
+            port: *http
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: *http
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: *http
+  service:
+    enabled: true
+    ports:
+      - name: http
+        port: *http
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+    behavior:
+      scaleDown:
+        stabilizationWindowSeconds: 300
+        policies:
+          - type: Pods
+            value: 1
+            periodSeconds: 180
+      scaleUp:
+        stabilizationWindowSeconds: 300
+        policies:
+          - type: Pods
+            value: 1
+            periodSeconds: 60
+  monitoring:
+    enabled: true
+    scheme: http
+    port: http
+    path: /prometheus
+    interval: 60s          

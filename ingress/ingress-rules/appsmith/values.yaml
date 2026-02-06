@@ -1,0 +1,21 @@
+provider: emissary
+virtualServices:
+  default:
+    enabled: true
+    certificate:
+      create: true
+    hosts:
+      - dashboards.xorro-stage.com
+    httpRoutes:
+      - match:
+          - uri:
+              prefix: /
+        options:
+          timeout: "600000"
+          allow_upgrade:
+            - websocket
+        action:
+          route:
+            - host: appsmith.appsmith
+              port: 80
+

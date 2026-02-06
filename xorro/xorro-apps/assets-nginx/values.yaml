@@ -1,0 +1,103 @@
+service:
+  fullNameOverride: &name "xorro-assets-nginx"
+  NST: &env
+    environment: "stage"
+    project: "xorro"
+    vertical: "xorro"
+  workload:
+    enabled: true
+    scheduling:
+      minAvailable: 1
+    deployment:
+      replicas: 1
+      rollingUpdate:
+        maxSurge: 100%
+        maxUnavailable: 1
+    podTemplate:
+      nodeSelector:
+        nst.com/app-type: "xorro"
+      tolerations:
+        - key: "nst.com/app-type"
+          operator: "Exists"
+          effect: "NoSchedule"
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - *name
+              topologyKey: "kubernetes.io/hostname"  # This key ensures pods are spread across nodes
+      defaultContainer:
+        image:
+          name: nginx
+          tag: "1.27.1"
+        containerPorts:
+          - containerPort: &http 80
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+        startupProbe:
+          httpGet:
+            path: /health
+            port: *http
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: *http
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: *http
+        volumeMounts:
+          - name: assets-nginx-volume
+            mountPath: /etc/nginx/conf.d
+          - name: assets-s3-pvc
+            mountPath: /data/assets
+          - name: campaign-s3-pvc
+            mountPath: /data/campaign
+          - name: peeps-s3-pvc
+            mountPath: /data/peeps
+      volumes:
+        - name: assets-nginx-volume
+          configMap:
+            name: nginx-peeps-config
+        - name: assets-s3-pvc
+          persistentVolumeClaim:
+            claimName: assets-s3-pvc
+        - name: campaign-s3-pvc
+          persistentVolumeClaim:
+            claimName: campaign-s3-pvc
+        - name: peeps-s3-pvc
+          persistentVolumeClaim:
+            claimName: peeps-s3-pvc
+
+  service:
+    enabled: true
+    ports:
+      - name: http
+        port: *http
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+    behavior:
+      scaleDown:
+        stabilizationWindowSeconds: 300
+        policies:
+          - type: Pods
+            value: 1
+            periodSeconds: 180
+      scaleUp:
+        stabilizationWindowSeconds: 300
+        policies:
+          - type: Pods
+            value: 1
+            periodSeconds: 60

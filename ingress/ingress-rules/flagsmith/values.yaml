@@ -1,0 +1,19 @@
+provider: emissary
+virtualServices:
+  default:
+    enabled: true
+    certificate:
+      create: true
+    hosts:
+      - flagsmith.xorro-stage.com
+    httpRoutes:
+      - match:
+          - uri:
+              prefix: /
+        action:
+          route:
+            - host: flagsmith-frontend.flagsmith
+              port: 8080
+        options:
+          allow_upgrade:
+            - websocket

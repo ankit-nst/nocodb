@@ -1,0 +1,4 @@
+mailhog:
+  service:
+    port:
+      smtp: 25

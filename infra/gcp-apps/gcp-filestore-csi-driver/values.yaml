@@ -1,0 +1,5 @@
+# Default values for gcp-filestore-csi-driver
+replicaCount: 1
+image:
+  repository: gke.gcr.io/filestore-csi-driver
+  tag: latest

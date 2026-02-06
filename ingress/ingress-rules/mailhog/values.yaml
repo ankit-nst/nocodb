@@ -1,0 +1,26 @@
+provider: emissary
+virtualServices:
+  default:
+    enabled: true
+    certificate:
+      create: true
+    hosts:
+      - mailhog.xorro-stage.com
+    httpRoutes:
+      - match:
+          - uri:
+              prefix: /
+        action:
+          route:
+            - host: mailhog.mailhog
+              port: 8025
+      - match:
+          - uri:
+              prefix: /api/v2/websocket
+        action:
+          route:
+            - host: mailhog.mailhog
+              port: 8025
+        options:
+          allow_upgrade:
+            - websocket

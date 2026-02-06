@@ -1,0 +1,19 @@
+provider: emissary
+virtualServices:
+  default:
+    enabled: true
+    certificate:
+      create: true
+    hosts:
+      - skywalking.xorro-stage.com
+    httpRoutes:
+      - match:
+          - uri:
+              prefix: /
+        action:
+          route:
+            - host: skywalking-skywalking-helm-ui.skywalking
+              port: 80
+        options:
+          allow_upgrade:
+            - websocket

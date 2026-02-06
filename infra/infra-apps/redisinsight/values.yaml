@@ -1,0 +1,71 @@
+service:
+  fullNameOverride: "redisinsight"
+  NST: &env
+    environment: "stage"
+    project: "infra"
+    vertical: "xorro"
+  workload:
+    enabled: true
+    scheduling:
+      minAvailable: 0
+    deployment:
+      replicas: 1
+      rollingUpdate:
+        maxSurge: 0
+        maxUnavailable: 1
+    podTemplate:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      defaultContainer:
+        image:
+          name: redis/redisinsight
+          tag: "latest"
+        containerPorts:
+          - containerPort: &http 5540
+        env:
+          - name: RI_LOG_LEVEL
+            value: "info"
+          - name: RI_STDOUT_LOGGER
+            value: "true"
+          - name: RI_FILES_LOGGER
+            value: "false"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+        startupProbe:
+          httpGet:
+            path: /api/docs
+            port: *http
+        readinessProbe:
+          httpGet:
+            path: /api/docs
+            port: *http
+        livenessProbe:
+          httpGet:
+            path: /api/docs
+            port: *http
+        volumeMounts:
+          - name: data
+            mountPath: /data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: redisinsight-data
+    persistence:
+      volumes:
+        - name: "data"
+          storageClassName: ebs-sc
+          storageRequest: 20Gi
+          accessModes:
+            - ReadWriteOnce
+  service:
+    enabled: true
+    ports:
+      - name: http
+        port: *http

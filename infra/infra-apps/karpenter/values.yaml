@@ -1,0 +1,23 @@
+karpenter:
+    controller:
+      resources:
+        requests:
+          cpu: 200m
+          memory: 512Mi
+        limits:
+          cpu: 1
+          memory: 1Gi
+    replicas: 2
+    strategy:
+      type: RollingUpdate
+    serviceAccount:
+      annotations:
+        eks.amazonaws.com/sts-regional-endpoints: "true"
+        eks.amazonaws.com/role-arn: arn:aws:iam::011528281799:role/stage-eks-karpenter
+    serviceMonitor:
+      enabled: true
+    settings:
+      clusterName: stage-cluster
+      clusterEndpoint: https://42A2A1DE2FFE0ACD758BF621DCF953CA.gr7.ap-southeast-1.eks.amazonaws.com
+    privateCluster:
+      enabled: true

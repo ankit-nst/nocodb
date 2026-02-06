@@ -1,0 +1,18 @@
+provider: emissary
+virtualServices:
+  default:
+    enabled: true
+    certificate:
+      create: true
+    hosts:
+      - argocd.xorro-stage.com
+    httpRoutes:
+      - match:
+          - uri:
+              prefix: /
+        action:
+          route:
+            - host: argocd-server.argocd
+              port: 80
+        options:
+          timeout: "30000" #milliseconds

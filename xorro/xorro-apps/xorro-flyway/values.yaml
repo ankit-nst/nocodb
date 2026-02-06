@@ -1,0 +1,60 @@
+service:
+  fullNameOverride: "xorro-flyway"
+  NST: &env
+    environment: "stage"
+    project: "xorro"
+    vertical: "xorro"
+  workload:
+    enabled: true
+    scheduling:
+      minAvailable: 1
+    deployment:
+      replicas: 1
+      rollingUpdate:
+        maxSurge: 100%
+        maxUnavailable: 1
+    podTemplate:
+      annotations:
+        config.linkerd.io/skip-outbound-ports: "8200,3306"
+        vault.hashicorp.com/agent-inject: 'true'
+        vault.hashicorp.com/agent-pre-populate-only: 'true'
+        vault.hashicorp.com/role: 'flyway-migration-service'
+        vault.hashicorp.com/agent-inject-default-template: 'json'
+        vault.hashicorp.com/agent-inject-secret-secrets.yml: 'secret/data/xorro/flyway-migration-service'
+        vault.hashicorp.com/agent-inject-template-secrets.yml: |
+          {{- with secret "secret/data/xorro/flyway-migration-service" -}}
+            {{ .Data.data.secrets }}
+          {{- end -}}
+      defaultContainer:
+        image:
+          name: 024848447392.dkr.ecr.ap-southeast-1.amazonaws.com/xorro/xorro-flyway
+          tag: "v1.68.0"
+        containerPorts:
+          - containerPort: &http 8081
+        env:
+          - name: MICRONAUT_CONFIG_FILES
+            value: "file:/vault/secrets/secrets.yml"
+        resources:
+          requests:
+            cpu: 110m
+            memory: 256Mi
+          limits:
+            cpu: 200m
+            memory: 512Mi
+        startupProbe:
+          httpGet:
+            path: /health
+            port: *http
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: *http
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: *http
+  service:
+    enabled: true
+    ports:
+      - name: http
+        port: *http

@@ -1,0 +1,5 @@
+# Default values for gcp-load-balancer-controller
+replicaCount: 1
+image:
+  repository: gke.gcr.io/gcp-load-balancer-controller
+  tag: latest

@@ -1,0 +1,70 @@
+service:
+  fullNameOverride: "zipkin"
+  NST: &env
+    environment: "stage"
+    project: "xorro"
+    vertical: "xorro"
+  workload:
+    enabled: true
+    scheduling:
+      minAvailable: 1
+    deployment:
+      replicas: 2
+      rollingUpdate:
+        maxSurge: 100%
+        maxUnavailable: 1
+    podTemplate:
+      annotations: {}
+
+      defaultContainer:
+        image:
+          name: openzipkin/zipkin
+          tag: "latest"
+        containerPorts:
+          - containerPort: &http 9411
+        command:
+          - start-zipkin
+        env:
+          - name: STORAGE_TYPE
+            value: elasticsearch
+          - name: ES_HOSTS
+            value: https://opensearch-cluster-master.opensearch:9200
+          # - name: ES_INDEX
+          #   value: zipkin-traces
+          - name: ES_USERNAME
+            value: admin
+          - name: ES_SSL_NO_VERIFY
+            value: 'true'
+          - name: LOGGING_LEVEL_ZIPKIN2
+            value: DEBUG
+          - name: ES_TIMEOUT
+            value: "20000"
+        envFrom:
+          - secretRef:
+              name: zipkin-secrets
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 4096Mi
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 9411
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 9411
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 9411
+
+  service:
+    enabled: true
+    ports:
+      - name: http
+        port: 9411
+        targetPort: 9411

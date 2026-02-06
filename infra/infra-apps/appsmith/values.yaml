@@ -1,0 +1,79 @@
+---
+appsmith:
+  InitContainers:
+    - name: mongo-init-container
+      image: docker.io/bitnamilegacy/mongodb:5.0.21-debian-11-r5
+      command:
+        - sh
+        - "-c"
+        - >
+          until mongo --host appsmith-mongodb.appsmith.svc.cluster.local --eval 'db.runCommand({ping:1})';
+          do echo waiting for mongo; sleep 2; done
+  mongodb:
+    image:
+      repository: bitnamilegacy/mongodb
+      tag: 5.0.21-debian-11-r5 
+    enabled: true
+    persistence:
+      enabled: true
+      storageClass: ebs-sc
+      size: 20Gi
+    architecture: replicaset
+    replicaCount: 2
+    useStatefulSet: true
+    serviceAccount:
+      create: true
+      name: appsmith
+      annotations:
+        eks.amazonaws.com/role-arn: arn:aws:iam::011528281799:role/stage-eks-appsmith
+    auth:
+      enabled: true
+      rootUser: root
+      rootPassword: Wmx7kbkLzgyIt3e6j693wak9
+      database: appsmith
+      username: appsmith
+      password: Wmx7kbkLzgyIt3e6j693wak9
+      replicaSetKey: oSPFoEQbfP
+
+  redis:
+    enabled: false
+  podSecurityContext:
+    # fsGroup: 2000
+  securityContext:
+    # capabilities:
+    #   drop:
+    #     - ALL
+    # readOnlyRootFilesystem: false
+    # runAsNonRoot: true
+    # runAsUser: 1000
+  resources:
+    requests:
+      cpu: 100m
+      memory: 4Gi
+    limits:
+      memory: 4Gi
+  serviceAccount:
+    create: true
+    annotations:
+      eks.amazonaws.com/role-arn: arn:aws:iam::011528281799:role/stage-eks-appsmith
+  persistence:
+    localCluster: []
+    size: 20Gi
+    storageClass: ebs-sc
+  autoupdate:
+    enabled: false
+  applicationConfig:
+    APPSMITH_MARKETPLACE_ENABLED: "false"
+    APPSMITH_DISABLE_TELEMETRY: "true"
+    APPSMITH_DISABLE_INTERCOM: "true"
+    APPSMITH_SIGNUP_ALLOWED_DOMAINS: "newsocialtheory.com,cloudcolon.com"
+    APPSMITH_ADMIN_EMAILS: "saurabh@newsocialtheory.com,arjun@newsocialtheory.com,arindam@newsocialtheory.com,jess@newsocialtheory.com"
+    APPSMITH_MAIL_ENABLED: "true"
+    APPSMITH_MAIL_HOST: "mailhog.mailhog"
+    APPSMITH_MAIL_PORT: "1025"
+    APPSMITH_MAIL_FROM: &email "no-reply@xorro-stage.com"
+    APPSMITH_REPLY_TO: *email
+    APPSMITH_SERVER_TIMEOUT: "300"
+    APPSMITH_HOST: "dashboards.xorro-stage.com"
+    APPSMITH_PROTOCOL: "https"
+  secretName: appsmith

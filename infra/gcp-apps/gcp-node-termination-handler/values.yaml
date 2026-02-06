@@ -1,0 +1,5 @@
+# Default values for gcp-node-termination-handler
+replicaCount: 1
+image:
+  repository: gke.gcr.io/node-termination-handler
+  tag: latest

@@ -1,0 +1,37 @@
+provider: emissary
+
+virtualServices:
+  default:
+    enabled: true
+    certificate:
+      create: true
+    hosts:
+      - countly.xorro-stage.com
+    httpRoutes:
+      # Route /i and /o to the API service
+      - match:
+          - uri:
+              prefix: /i
+          - uri:
+              prefix: /o
+        action:
+          route:
+            - host: countly-api.countly
+              port: 3000
+        options:
+          allow_upgrade:
+            - websocket
+
+      # All other paths to frontend
+      - match:
+          - uri:
+              prefix: /images
+          - uri:
+              prefix: /
+        action:
+          route:
+            - host: countly-frontend.countly
+              port: 3000
+        options:
+          allow_upgrade:
+            - websocket

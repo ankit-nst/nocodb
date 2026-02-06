@@ -1,0 +1,353 @@
+provider: emissary
+virtualServices:
+  default:
+    enabled: true
+    certificate:
+      create: true
+    hosts:
+    - api.xorro-stage.com
+    httpRoutes:
+    - match:
+      - uri:
+          prefix: /creator
+      action:
+        route:
+        - host: xorro-assets-nginx.xorro
+          port: 80
+      options:
+        timeout: "30000" # millisecond
+
+    - match:
+      - uri:
+          prefix: /coverpic
+      action:
+        route:
+        - host: xorro-assets-nginx.xorro
+          port: 80
+      options:
+        timeout: "30000" # millisecond
+
+
+    - match:
+      - uri:
+          regex: ^/api/campaign/internal/.*$
+      action:
+        redirect:
+          scheme: https
+          host: trade.xorro-stage.com
+          uri: /404
+
+    - match:
+      # soma-service
+      - uri:
+          exact: /api/soma/prometheus
+      action:
+        redirect:
+          scheme: https
+          host: trade.xorro-stage.com
+          uri: /404
+
+    - match:
+      # soma-service
+      - uri:
+          exact: /api/soma/swagger/
+      action:
+        redirect:
+          scheme: https
+          host: trade.xorro-stage.com
+          uri: /404
+
+    - match:
+      # soma-service
+      - uri:
+          exact: /api/soma/swagger-ui
+      action:
+        redirect:
+          scheme: https
+          host: trade.xorro-stage.com
+          uri: /404
+
+    - match:
+      # soma-service
+      - uri:
+          regex: /api/soma/(.*)
+      action:
+        route:
+        - host: soma-service.xorro
+          port: 8091
+      options:
+        timeout: "30000" # milliseconds
+        rewrite:
+          uriRegex:
+            pattern: /api/soma/(.*)
+            substitution: /\1
+
+
+    - match:
+      # auth-service
+      - uri:
+          exact: /api/auth/prometheus
+      action:
+        redirect:
+          scheme: https
+          host: trade.xorro-stage.com
+          uri: /404
+
+    - match:
+      # auth-service
+      - uri:
+          regex: /api/auth/(.*)
+      action:
+        route:
+        - host: xorro-auth-service.xorro
+          port: 8084
+      options:
+        timeout: "30000" # milliseconds
+        rewrite:
+          uriRegex:
+            pattern: /api/auth/(.*)
+            substitution: /\1
+
+    - match:
+      # auth-service
+      - uri:
+          exact: /api/auth/swagger/
+      action:
+        redirect:
+          scheme: https
+          host: trade.xorro-stage.com
+          uri: /404
+
+
+    - match:
+      # auth-service
+      - uri:
+          exact: /auth/swagger-ui
+      action:
+        redirect:
+          scheme: https
+          host: trade.xorro-stage.com
+          uri: /404
+
+
+    - match:
+      # auth-service
+      - uri:
+          exact: /api/auth/swagger-ui
+      action:
+        redirect:
+          scheme: https
+          host: trade.xorro-stage.com
+          uri: /404
+
+    - match:
+      # campaign service
+      - uri:
+          exact: /api/campaign/prometheus
+      action:
+        redirect:
+          scheme: https
+          host: trade.xorro-stage.com
+          uri: /404
+
+    - match:
+      # campaign service
+      - uri:
+          regex: /api/campaign/(.*)
+      action:
+        route:
+        - host: xorro-campaign-service.xorro
+          port: 8083
+      options:
+        timeout: "30000" # milliseconds
+        rewrite:
+          uriRegex:
+            pattern: /api/campaign/(.*)
+            substitution: /\1
+
+    - match:
+      #campaign-service
+      - uri:
+          exact: /api/campaign/swagger/
+      action:
+        redirect:
+          scheme: https
+          host: trade.xorro-stage.com
+          uri: /404
+
+
+    - match:
+      #campaign-service
+      - uri:
+          exact: /api/campaign/swagger-ui
+      action:
+        redirect:
+          scheme: https
+          host: trade.xorro-stage.com
+          uri: /404
+
+
+    - match:
+      # xorro-wallet-service
+      - uri:
+          exact: /api/wallet/prometheus
+      action:
+        redirect:
+          scheme: https
+          host: trade.xorro-stage.com
+          uri: /404
+
+
+    - match:
+      # xorro-wallet-backup-webhook-URL
+      - uri:
+          regex: /api/wallet/backup/(.*)
+      action:
+        route:
+        - host: xorro-wallet-service.xorro
+          port: 8094
+      options:
+        timeout: "30000" # milliseconds
+        rewrite:
+          uriRegex:
+            pattern: /api/wallet/backup/(.*)
+            substitution: /\1
+
+    - match:
+      # xorro-wallet-service
+      - uri:
+          regex: /api/wallet/(.*)
+      action:
+        route:
+        - host: xorro-wallet-service.xorro
+          port: 8094
+      options:
+        timeout: "30000" # milliseconds
+        rewrite:
+          uriRegex:
+            pattern: /api/wallet/(.*)
+            substitution: /\1
+
+    - match:
+      #wallet-service
+      - uri:
+          exact: /api/wallet/swagger/
+      action:
+        redirect:
+          scheme: https
+          host: trade.xorro-stage.com
+          uri: /404
+
+    - match:
+      #wallet-service
+      - uri:
+          exact: /api/wallet/swagger-ui
+      action:
+        redirect:
+          scheme: https
+          host: trade.xorro-stage.com
+          uri: /404
+
+    - match:
+      # xorro-notification-service
+      - uri:
+          regex: /api/notification/notifications/inapp/(.*)
+      action:
+        route:
+        - host: xorro-notification-service.xorro
+          port: 8081
+      options:
+        timeout: "30000" # milliseconds
+        rewrite:
+          uriRegex:
+            pattern: /api/notification/(.*)
+            substitution: /\1
+
+    - match:
+      # Docs-service
+      - uri:
+          regex: /docs/?(.*)
+      action:
+        route:
+        - host: xorro-doc-service.xorro
+          port: 8085
+      options:
+        timeout: "30000" # milliseconds
+        rewrite:
+          uriRegex:
+            pattern: /docs/?(.*)
+            substitution: /\1
+
+    - match:
+      # Docs-service
+      - uri:
+          exact: /docs/prometheus
+      action:
+        redirect:
+          scheme: https
+          host: trade.xorro-stage.com
+          uri: /404
+
+
+    - match:
+      # Docs-service
+      - uri:
+          exact: /docs/swagger/
+      action:
+        redirect:
+          scheme: https
+          host: trade.xorro-stage.com
+          uri: /404
+
+
+    - match:
+      # Docs-service
+      - uri:
+          exact: /docs/swagger-ui
+      action:
+        redirect:
+          scheme: https
+          host: trade.xorro-stage.com
+          uri: /404
+
+    - match:
+      - uri:
+          prefix: /api/webhook
+      action:
+        route:
+          - host: xorro-circle-service.xorro
+            port: 3000
+      options:
+        timeout: "30000" # milliseconds
+        allow_upgrade:
+          - websocket: {}
+
+    # user-preference-service
+    - match:
+      - uri:
+          regex: /api/user/preference/(.*)
+      action:
+        route:
+        - host: xorro-user-preference-service.xorro
+          port: 8085
+      options:
+        timeout: "30000" # milliseconds
+        rewrite:
+          uriRegex:
+            pattern: /api/user/preference/(.*)
+            substitution: /\1
+
+    # peeps-user-service
+    - match:
+      - uri:
+          regex: /api/peeps/profile/(.*)
+      action:
+        route:
+        - host: peeps-user-service.xorro
+          port: 8093
+      options:
+        timeout: "30000" # milliseconds
+        rewrite:
+          uriRegex:
+            pattern: /api/peeps/(.*)
+            substitution: /\1

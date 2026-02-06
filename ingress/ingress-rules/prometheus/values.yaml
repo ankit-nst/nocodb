@@ -1,0 +1,23 @@
+provider: emissary
+virtualServices:
+  default:
+    enabled: true
+    certificate:
+      create: true
+    hosts:
+      - prometheus.xorro-stage.com
+    httpRoutes:
+      - match:
+          - uri:
+              prefix: /linkerd
+        action:
+          route:
+            - host: prometheus.linkerd-viz
+              port: 9090
+      - match:
+          - uri:
+              prefix: /
+        action:
+          route:
+            - host: prometheus-kube-prometheus-prometheus.prometheus
+              port: 9090

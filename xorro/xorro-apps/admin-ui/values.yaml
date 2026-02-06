@@ -1,0 +1,47 @@
+service:
+  fullNameOverride: "admin-ui"
+  NST: &env
+    environment: "stage"
+    project: "xorro"
+    vertical: "xorro"
+  workload:
+    enabled: false
+    scheduling:
+      minAvailable: 1
+    deployment:
+      replicas: 1
+      rollingUpdate:
+        maxSurge: 100%
+        maxUnavailable: 1
+    podTemplate:
+      annotations:
+      defaultContainer:
+        image:
+          name: 024848447392.dkr.ecr.ap-southeast-1.amazonaws.com/peeps/peeps-admin
+          tag: "v1.0.0"
+        containerPorts:
+          - containerPort: &http 5173
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+        startupProbe:
+          httpGet:
+            path: /
+            port: *http
+        readinessProbe:
+          httpGet:
+            path: /
+            port: *http
+        livenessProbe:
+          httpGet:
+            path: /
+            port: *http
+  service:
+    enabled: true
+    ports:
+      - name: http
+        port: *http

@@ -1,0 +1,226 @@
+kube-prometheus-stack:
+  nameOverride: ""
+  namespaceOverride: ""
+  kubeTargetVersionOverride: ""
+  kubeVersionOverride: ""
+  fullnameOverride: ""
+  commonLabels: { }
+  crds:
+    enabled: true
+  customRules: { }
+  defaultRules:
+    create: true
+    rules:
+      alertmanager: true
+      etcd: true
+      configReloaders: true
+      general: true
+      k8sContainerCpuUsageSecondsTotal: true
+      k8sContainerMemoryCache: true
+      k8sContainerMemoryRss: true
+      k8sContainerMemorySwap: true
+      k8sContainerResource: true
+      k8sContainerMemoryWorkingSetBytes: true
+      k8sPodOwner: true
+      kubeApiserverAvailability: true
+      kubeApiserverBurnrate: true
+      kubeApiserverHistogram: true
+      kubeApiserverSlos: true
+      kubeControllerManager: true
+      kubelet: true
+      kubeProxy: true
+      kubePrometheusGeneral: true
+      kubePrometheusNodeRecording: true
+      kubernetesApps: true
+      kubernetesResources: true
+      kubernetesStorage: true
+      kubernetesSystem: true
+      kubeSchedulerAlerting: true
+      kubeSchedulerRecording: true
+      kubeStateMetrics: true
+      network: true
+      node: true
+      nodeExporterAlerting: true
+      nodeExporterRecording: true
+      prometheus: true
+      prometheusOperator: true
+      windows: true
+    ## Reduce app namespace alert scope
+    appNamespacesTarget: ".*"
+    keepFiringFor: ""
+    ## Prefix for runbook URLs. Use this to override the first part of the runbookURLs that is common to all rules.
+    runbookUrl: "https://runbooks.prometheus-operator.dev/runbooks"
+    node:
+      fsSelector: 'fstype!=""'
+    ## Disabled PrometheusRule alerts
+    disabled: { }
+  additionalPrometheusRulesMap: { }
+  global:
+    rbac:
+      create: true
+  windowsMonitoring:
+    enabled: false
+  alertmanager:
+    enabled: true
+  kubernetesServiceMonitors:
+    enabled: true
+  kubeApiServer:
+    enabled: true
+  kubelet:
+    enabled: true
+    namespace: kube-system
+  kubeControllerManager:
+    enabled: true
+  coreDns:
+    enabled: true
+  kubeDns:
+    enabled: false
+  kubeEtcd:
+    enabled: true
+  kubeScheduler:
+    enabled: true
+  kubeProxy:
+    enabled: true
+  kubeStateMetrics:
+    enabled: true
+  nodeExporter:
+    enabled: true
+  prometheusOperator:
+    enabled: true
+  grafana:
+    enabled: false
+  prometheus:
+    enabled: true
+    service:
+      annotations: { }
+      labels: { }
+      clusterIP: ""
+      ipDualStack:
+        enabled: false
+        ipFamilies: [ "IPv6", "IPv4" ]
+        ipFamilyPolicy: "PreferDualStack"
+
+      ## Port for Prometheus Service to listen on
+      ##
+      port: 9090
+
+      ## To be used with a proxy extraContainer port
+      targetPort: 9090
+
+      ## Port for Prometheus Reloader to listen on
+      ##
+      reloaderWebPort: 8080
+
+      ## List of IP addresses at which the Prometheus server service is available
+      ## Ref: https://kubernetes.io/docs/user-guide/services/#external-ips
+      ##
+      externalIPs: [ ]
+
+      ## Port to expose on each node
+      ## Only used if service.type is 'NodePort'
+      ##
+      nodePort: 30090
+
+      ## Loadbalancer IP
+      ## Only use if service.type is "LoadBalancer"
+      loadBalancerIP: ""
+      loadBalancerSourceRanges: [ ]
+
+      ## Denotes if this Service desires to route external traffic to node-local or cluster-wide endpoints
+      ##
+      externalTrafficPolicy: Cluster
+
+      ## Service type
+      ##
+      type: ClusterIP
+
+      ## Additional ports to open for Prometheus service
+      ##
+      additionalPorts: [ ]
+      # additionalPorts:
+      # - name: oauth-proxy
+      #   port: 8081
+      #   targetPort: 8081
+      # - name: oauth-metrics
+      #   port: 8082
+      #   targetPort: 8082
+
+      ## Consider that all endpoints are considered "ready" even if the Pods themselves are not
+      ## Ref: https://kubernetes.io/docs/reference/kubernetes-api/service-resources/service-v1/#ServiceSpec
+      publishNotReadyAddresses: false
+
+      ## If you want to make sure that connections from a particular client are passed to the same Pod each time
+      ## Accepts 'ClientIP' or 'None'
+      ##
+      sessionAffinity: None
+
+      ## If you want to modify the ClientIP sessionAffinity timeout
+      ## The value must be >0 && <=86400(for 1 day) if ServiceAffinity == "ClientIP"
+      ##
+      sessionAffinityConfig:
+        clientIP:
+          timeoutSeconds: 10800
+    servicePerReplica:
+      enabled: false
+      annotations: { }
+
+      ## Port for Prometheus Service per replica to listen on
+      ##
+      port: 9090
+
+      ## To be used with a proxy extraContainer port
+      targetPort: 9090
+
+      ## Port to expose on each node
+      ## Only used if servicePerReplica.type is 'NodePort'
+      ##
+      nodePort: 30091
+
+      ## Loadbalancer source IP ranges
+      ## Only used if servicePerReplica.type is "LoadBalancer"
+      loadBalancerSourceRanges: [ ]
+
+      ## Denotes if this Service desires to route external traffic to node-local or cluster-wide endpoints
+      ##
+      externalTrafficPolicy: Cluster
+
+      ## Service type
+      ##
+      type: ClusterIP
+
+      ## Service dual stack
+      ##
+      ipDualStack:
+        enabled: false
+        ipFamilies: [ "IPv6", "IPv4" ]
+        ipFamilyPolicy: "PreferDualStack"
+    podDisruptionBudget:
+      enabled: true
+      minAvailable: 1
+      maxUnavailable: ""
+    prometheusSpec:
+      serviceMonitorSelector:
+        matchLabels: {}
+      persistentVolumeClaimRetentionPolicy:
+        whenDeleted: Retain
+        whenScaled: Retain
+      automountServiceAccountToken: true
+      ## EnableAdminAPI enables Prometheus the administrative HTTP API which includes functionality such as deleting time series.
+      enableAdminAPI: false
+      image:
+        registry: quay.io
+        repository: prometheus/prometheus
+        tag: v2.54.1
+        sha: ""
+      externalUrl: ""
+      retention: 30d
+      retentionSize: 50GB
+      podAntiAffinity: ""
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: ebs-sc
+            accessModes: ["ReadWriteOnce"]
+            resources:
+              requests:
+                storage: 80Gi

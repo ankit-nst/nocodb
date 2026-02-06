@@ -1,0 +1,95 @@
+flagsmith:
+  podAnnotations:
+    vault.hashicorp.com/agent-inject: "true"
+    vault.hashicorp.com/agent-pre-populate-only: 'true'
+    vault.hashicorp.com/role: "flagsmith"
+    vault.hashicorp.com/agent-inject-secret-output: "secret/data/flagsmith"
+    vault.hashicorp.com/agent-inject-template-output: |
+      {{- with secret "secret/data/flagsmith" -}}
+      {{ .Data.data.output }}
+      {{- end }}
+  api:
+    image:
+      repository: flagsmith.docker.scarf.sh/flagsmith/flagsmith-api
+      imagePullPolicy: IfNotPresent
+    separateApiAndFrontend: true
+    replicacount: 1
+    extraEnv:
+      ENABLE_ADMIN_ACCESS_USER_PASS: true
+    livenessProbe:
+      path: /health
+      failureThreshold: 5
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 2
+    readinessProbe:
+      path: /health
+      failureThreshold: 10
+      initialDelaySeconds: 1
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 2
+    enableMigrateDbInitContainer: true
+
+  frontend:
+    enabled: true
+    image:
+      repository: flagsmith.docker.scarf.sh/flagsmith/flagsmith-frontend
+      imagePullPolicy: IfNotPresent
+    replicacount: 1
+    apiProxy:
+      enabled: true
+    livenessProbe:
+      failureThreshold: 20
+      initialDelaySeconds: 20
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 10
+    readinessProbe:
+      failureThreshold: 20
+      initialDelaySeconds: 20
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 10
+
+  devPostgresql:
+    enabled: false
+    serviceAccount:
+      create: true
+    nameOverride: dev-postgresql
+    auth:
+      postgresPassword: flagsmith
+      database: flagsmith
+
+  databaseExternal:
+    enabled: true
+    url: 'postgres://flagsmith_system:HDVTcEaXKbtR7BxGvn5UYhFWu9Zs38m4Pg@rds.xorro.sg.stage.local:3306/flagsmith'
+
+  influxdb2:
+    enabled: false
+    adminUser:
+      organization: "influxdata"
+      bucket: "default"
+      user: "admin"
+      retention_policy: "0s"
+    persistence:
+      enabled: false
+
+  service:
+    api:
+      type: ClusterIP
+      port: 8000
+    frontend:
+      type: ClusterIP
+      port: 8080
+
+  ingress:
+    frontend:
+      enabled: false
+      hosts:
+        - chart-example.local
+    api:
+      enabled: false
+      hosts:
+        - host: chart-example.local

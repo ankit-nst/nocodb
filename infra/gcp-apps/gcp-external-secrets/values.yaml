@@ -1,0 +1,5 @@
+# Default values for gcp-external-secrets
+replicaCount: 1
+image:
+  repository: external-secrets/external-secrets
+  tag: latest
